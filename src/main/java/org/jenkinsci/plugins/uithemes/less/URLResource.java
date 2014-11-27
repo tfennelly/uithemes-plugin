@@ -23,13 +23,15 @@
  */
 package org.jenkinsci.plugins.uithemes.less;
 
+import hudson.PluginManager;
 import hudson.PluginWrapper;
-import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.lesscss.Resource;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -50,10 +52,11 @@ public class URLResource implements Resource {
      */
     public static final String VARIABLES_ALIAS = "/core/variables.less";
 
-    private final URI resConfigURI;
+    private URI resConfigURI;
+    private URL baseURL;
     private URL resClasspathURL;
     private URLResource coreVariables;
-    private UIThemesPlugin themesPlugin;
+    private UIThemesProcessor themesProcessor;
 
     public URLResource(URL resClasspathURL) {
         this.resClasspathURL = resClasspathURL;
@@ -72,7 +75,7 @@ public class URLResource implements Resource {
         try {
             this.resConfigURI = new URI(resPath);
             if (this.resConfigURI.isAbsolute()) {
-                this.resClasspathURL = getPluginResoureURL(resPath);
+                this.resClasspathURL = getRelativeResourceURL(resPath);
                 if (resClasspathURL == null) {
                     this.resClasspathURL = this.resConfigURI.toURL();
                 }
@@ -84,13 +87,18 @@ public class URLResource implements Resource {
         }
     }
 
+    public URLResource setBaseURL(URL baseURL) {
+        this.baseURL = baseURL;
+        return this;
+    }
+
     public URLResource setCoreVariables(URLResource coreVariables) {
         this.coreVariables = coreVariables;
         return this;
     }
 
-    public URLResource setThemesPlugin(UIThemesPlugin plugin) {
-        this.themesPlugin = plugin;
+    public URLResource setThemesProcessor(UIThemesProcessor plugin) {
+        this.themesProcessor = plugin;
         return this;
     }
 
@@ -150,7 +158,7 @@ public class URLResource implements Resource {
             }
 
             // Might be a resource imported from a plugin e.g. "plugin:icon-shim:/less/mixins.less"
-            URLResource pluginResource = getPluginResoure(relativeResourcePath);
+            URLResource pluginResource = getRelativeResource(relativeResourcePath);
             if (pluginResource != null) {
                 return pluginResource;
             }
@@ -163,11 +171,12 @@ public class URLResource implements Resource {
                 String jar = urlAsString.substring(0, astrixIdx);
                 String resInJar = urlAsString.substring(astrixIdx + 1);
                 return new URLResource(new URL(jar + "!" + URI.create(resInJar).resolve(relativeResourcePath)))
-                        .setThemesPlugin(themesPlugin)
+                        .setThemesProcessor(themesProcessor)
                         .setCoreVariables(coreVariables);
             } else {
                 return new URLResource(resConfigURI.resolve(relativeResourcePath).toString())
-                        .setThemesPlugin(themesPlugin)
+                        .setBaseURL(baseURL)
+                        .setThemesProcessor(themesProcessor)
                         .setCoreVariables(coreVariables);
             }
         } else {
@@ -176,11 +185,11 @@ public class URLResource implements Resource {
     }
 
     private URLResource getThemedResource(final String relativeResourcePath) {
-        if (themesPlugin != null) {
+        if (themesProcessor != null) {
             String themeVariableName = extractThemeVariableName(relativeResourcePath);
 
             if (themeVariableName != null) {
-                String themeConfig = themesPlugin.getThemeVariables().getProperty("theme-" + themeVariableName);
+                String themeConfig = themesProcessor.getThemeVariables().getProperty("theme-" + themeVariableName);
                 if (themeConfig != null) {
                     // Try for the named theme config LESS resource e.g. "classic-icons.less"
                     String namedThemeResource = relativeResourcePath.replace("#" + themeVariableName, themeConfig + "-" + themeVariableName);
@@ -223,23 +232,33 @@ public class URLResource implements Resource {
         return null;
     }
 
-    private URLResource getPluginResoure(final String pluginResource) {
-        URL pluginResourceURL = getPluginResoureURL(pluginResource);
-
-        if (pluginResourceURL != null) {
-            return new URLResource(pluginResourceURL)
-                    .setThemesPlugin(themesPlugin)
-                    .setCoreVariables(coreVariables);
-        }
-
-        return null;
+    public static boolean isCoreVariables(String relativeResourcePath) {
+        return VARIABLES_ALIAS.equals(relativeResourcePath);
     }
 
-    private URL getPluginResoureURL(final String pluginResource) {
-        if (themesPlugin == null) {
-            return null;
+    @Override
+    public String getName() {
+        return resConfigURI.toString();
+    }
+
+    public static URL getResourceURL(String resPath, URL baseResourceURL) throws MalformedURLException {
+        if (baseResourceURL == null) {
+            return new URL(resPath);
         }
 
+        String baseURL = baseResourceURL.toString();
+
+        if (baseURL.endsWith("/")) {
+            baseURL = baseURL.substring(0, baseURL.length() - 1);
+        }
+        if (resPath.startsWith("/")) {
+            resPath = resPath.substring(1);
+        }
+
+        return new URL(baseURL + "/" + resPath);
+    }
+
+    public static PluginWrapper getResourcePlugin(final String pluginResource, final PluginManager pluginManager) {
         try {
             URI pluginResourceURI = new URI(pluginResource);
 
@@ -247,13 +266,11 @@ public class URLResource implements Resource {
                 pluginResourceURI = new URI(pluginResourceURI.getSchemeSpecificPart());
                 String pluginName = pluginResourceURI.getScheme();
 
-                PluginWrapper plugin = themesPlugin.getPluginManager().getPlugin(pluginName);
+                PluginWrapper plugin = pluginManager.getPlugin(pluginName);
                 if (plugin != null) {
-                    String resourcePath = pluginResourceURI.getPath();
-                    return themesPlugin.getPluginLESSResourceURL(plugin, resourcePath);
-
+                    return plugin;
                 } else {
-                    LOGGER.log(Level.WARNING, String.format("@import '%s' is invalid.  Unknown plugin '%s'.", pluginResource, pluginName));
+                    LOGGER.log(Level.WARNING, String.format("Invalid resource URL '%s'.  Unknown plugin '%s'.", pluginResource, pluginName));
                 }
             }
         } catch(Exception e) {
@@ -263,12 +280,31 @@ public class URLResource implements Resource {
         return null;
     }
 
-    public static boolean isCoreVariables(String relativeResourcePath) {
-        return VARIABLES_ALIAS.equals(relativeResourcePath);
+    protected URLResource getRelativeResource(final String resourcePath) {
+        URL pluginResourceURL = getRelativeResourceURL(resourcePath);
+
+        if (pluginResourceURL != null) {
+            return new URLResource(pluginResourceURL)
+                    .setThemesProcessor(themesProcessor)
+                    .setCoreVariables(coreVariables);
+        }
+
+        return null;
     }
 
-    @Override
-    public String getName() {
-        return resConfigURI.toString();
+    protected URL getRelativeResourceURL(final String resourcePath) {
+        try {
+            URI pluginResourceURI = new URI(resourcePath);
+
+            if (pluginResourceURI.isAbsolute() && pluginResourceURI.getScheme().equalsIgnoreCase("plugin")) {
+                pluginResourceURI = new URI(pluginResourceURI.getSchemeSpecificPart());
+
+                return getResourceURL(pluginResourceURI.getPath(), baseURL);
+            }
+        } catch(Exception e) {
+            LOGGER.log(Level.WARNING, "Error resolving plugin LESS resource.", e);
+        }
+
+        return null;
     }
 }

@@ -33,7 +33,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -65,7 +64,7 @@ public class UIThemesPluginTest {
         // See UIThemesPlugin.doFilter ... it checks getPathInfo
         Mockito.when(httpServletRequest.getPathInfo()).thenReturn("/styles/core.css");
 
-        uiThemesPlugin.filter.doFilter(httpServletRequest, httpServletResponse, filterChain);
+        uiThemesPlugin.themesProcessor.filter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         Assert.assertEquals(1, uiThemesPlugin.responses.size());
         Assert.assertTrue(uiThemesPlugin.responses.get(0).endsWith("/*\n" +
@@ -92,7 +91,7 @@ public class UIThemesPluginTest {
         // See UIThemesPlugin.doFilter ... it checks getPathInfo
         Mockito.when(httpServletRequest.getPathInfo()).thenReturn("/styles/plugins.css");
 
-        uiThemesPlugin.filter.doFilter(httpServletRequest, httpServletResponse, filterChain);
+        uiThemesPlugin.themesProcessor.filter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         Assert.assertEquals(1, uiThemesPlugin.responses.size());
 
@@ -147,32 +146,37 @@ public class UIThemesPluginTest {
         }
 
         @Override
-        protected void registerStylesFilter(UIThemesPlugin.StylesFilter filter) throws ServletException {
+        protected UIThemesProcessor newProcessor() {
+            return new UIThemesProcessor() {
+                @Override
+                protected void registerStylesFilter(UIThemesProcessor.StylesFilter filter) throws ServletException {
 
-            Mockito.when(filterConfig.getServletContext()).thenReturn(servletContext);
-            try {
-                URL resource = UIThemesPluginTest.class.getResource("/css/style.less");
-                Mockito.when(servletContext.getResource("/css/style.less")).thenReturn(resource);
-            } catch (MalformedURLException e) {
-                Assert.fail(e.getMessage());
-            }
+                    Mockito.when(filterConfig.getServletContext()).thenReturn(servletContext);
+                    try {
+                        URL resource = UIThemesPluginTest.class.getResource("/css/style.less");
+                        Mockito.when(servletContext.getResource("/css/style.less")).thenReturn(resource);
+                    } catch (MalformedURLException e) {
+                        Assert.fail(e.getMessage());
+                    }
 
-            filter.init(filterConfig);
-        }
+                    filter.init(filterConfig);
+                }
 
-        @Override
-        protected void writeCSSResponse(byte[] cssBytes, HttpServletResponse httpServletResponse) throws IOException {
-            responses.add(new String(cssBytes, Charset.forName("UTF-8")).trim());
-        }
+                @Override
+                protected void writeCSSResponse(byte[] cssBytes, HttpServletResponse httpServletResponse) throws IOException {
+                    responses.add(new String(cssBytes, Charset.forName("UTF-8")).trim());
+                }
 
-        @Override
-        public URL getPluginLESSStyleResourceURL(PluginWrapper plugin) throws MalformedURLException {
-            List<PluginWrapper> pluginList = pluginManager.getPlugins();
-            int index = pluginList.indexOf(plugin) + 1;
+                @Override
+                public URL getPluginLESSStyleResourceURL(PluginWrapper plugin) throws MalformedURLException {
+                    List<PluginWrapper> pluginList = pluginManager.getPlugins();
+                    int index = pluginList.indexOf(plugin) + 1;
 
-            Mockito.when(plugin.getDisplayName()).thenReturn("Plugin " + index);
+                    Mockito.when(plugin.getDisplayName()).thenReturn("Plugin " + index);
 
-            return MockedUIThemesPlugin.class.getResource(String.format("/less/plugin%d.less", index));
+                    return MockedUIThemesPlugin.class.getResource(String.format("/less/plugin%d.less", index));
+                }
+            };
         }
     }
 }
