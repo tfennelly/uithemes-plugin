@@ -27,9 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.lesscss.LessException;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

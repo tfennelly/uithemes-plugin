@@ -149,7 +149,7 @@ public class UIThemesPluginTest {
         protected UIThemesProcessor newProcessor() {
             return new UIThemesProcessor() {
                 @Override
-                protected void registerStylesFilter(UIThemesProcessor.StylesFilter filter) throws ServletException {
+                protected void registerStylesFilter(StylesFilter filter) throws ServletException {
 
                     Mockito.when(filterConfig.getServletContext()).thenReturn(servletContext);
                     try {
