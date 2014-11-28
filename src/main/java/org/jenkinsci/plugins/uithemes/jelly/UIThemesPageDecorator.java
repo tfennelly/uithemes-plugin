@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes;
+package org.jenkinsci.plugins.uithemes.jelly;
 
 import hudson.Extension;
 import hudson.model.PageDecorator;
@@ -30,5 +30,5 @@ import hudson.model.PageDecorator;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @Extension
-public class PluginStylePageDecorator extends PageDecorator {
+public class UIThemesPageDecorator extends PageDecorator {
 }

@@ -241,6 +241,11 @@ public class URLResource implements Resource {
         return resConfigURI.toString();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
     public static URL getResourceURL(String resPath, URL baseResourceURL) throws MalformedURLException {
         if (baseResourceURL == null) {
             return new URL(resPath);
