@@ -21,12 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes;
+package org.jenkinsci.plugins.uithemes.util;
+
+import hudson.model.User;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.io.File;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPluginTest {
+public class JenkinsUtilTest {
 
+    @Before
+    public void before() throws NoSuchMethodException {
+        JenkinsUtilTestSetup.setup();
+    }
 
+    @Test
+    public void test_getJenkinsUserHome() throws NoSuchMethodException {
+        User user = Mockito.mock(User.class);
+        Mockito.when(user.getId()).thenReturn("TFennelly");
+
+        File userHome = JenkinsUtil.getJenkinsUserHome(user);
+        Assert.assertEquals("./target/jenkins-home/users/tfennelly", userHome.getPath());
+    }
 }

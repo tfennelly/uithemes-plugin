@@ -25,34 +25,70 @@ package org.jenkinsci.plugins.uithemes;
 
 import hudson.Plugin;
 import hudson.PluginManager;
+import hudson.PluginWrapper;
+import jenkins.model.Jenkins;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class UIThemesPlugin extends Plugin {
 
+    private static final Logger LOGGER = Logger.getLogger(UIThemesPlugin.class.getName());
+
     protected UIThemesProcessor themesProcessor;
 
     @Override
     public void postInitialize() throws Exception {
-        // NB: This method can be called multiple times for this plugin.  The PluginManager calls it to
-        // re-initialise the styles in the event of a plugin being added or removed.  Not a good way imo
-        // but could not see another way (is there one?).  Would be nice if the plugin could listen for
-        // an event that gets emitted by the PluginManager.
-
-        if (themesProcessor == null) {
-            themesProcessor = newProcessor();
-        }
-
-        themesProcessor.assembleCoreStyles();
-        themesProcessor.assemblePluginStyles(getPluginManager());
+        themesProcessor = newProcessor();
+        addThemeContributors();
     }
 
     protected UIThemesProcessor newProcessor() {
         return new UIThemesProcessor();
     }
 
+    public UIThemesProcessor getThemesProcessor() {
+        return themesProcessor;
+    }
+
     public PluginManager getPluginManager() {
         return getWrapper().parent;
+    }
+
+    private void addThemeContributors() throws IOException {
+        List<PluginWrapper> plugins = getPluginManager().getPlugins();
+
+        for (PluginWrapper pluginWrapper : plugins) {
+            Plugin plugin = pluginWrapper.getPlugin();
+            if (plugin instanceof UIThemeContributor) {
+                addThemeContributor((UIThemeContributor) plugin);
+            }
+        }
+
+        themesProcessor.deleteAllUserThemes();
+    }
+
+    public void addThemeContributor(UIThemeContributor themeContributor) {
+        themesProcessor.addContributor(themeContributor);
+    }
+
+    public void removeThemeContributor(UIThemeContributor themeContributor) {
+        themesProcessor.removeContributor(themeContributor);
+    }
+
+    public static UIThemesPlugin getInstance() {
+        PluginManager pluginManager = Jenkins.getInstance().getPluginManager();
+        PluginWrapper uiThemesPlugin = pluginManager.getPlugin("uithemes");
+        if (uiThemesPlugin != null) {
+            return (UIThemesPlugin) uiThemesPlugin.getPlugin();
+        } else {
+            LOGGER.log(Level.WARNING, "Error rebuilding plugin styles.  Failed to find a plugin named 'uithemes'.");
+            return null;
+        }
     }
 }

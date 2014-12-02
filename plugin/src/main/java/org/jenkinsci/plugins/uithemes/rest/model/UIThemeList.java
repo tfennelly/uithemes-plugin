@@ -21,12 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes;
+package org.jenkinsci.plugins.uithemes.rest.model;
+
+import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPluginTest {
+public class UIThemeList {
 
+    public List<UIThemeExt> themes = new ArrayList<UIThemeExt>();
 
+    public static UIThemeList fromInternal(UIThemeSet uiThemes) {
+        UIThemeList themeList = new UIThemeList();
+        for (String themeName : uiThemes.getThemeNames()) {
+            themeList.themes.add(UIThemeExt.fromInternal(uiThemes.getTheme(themeName)));
+        }
+        return themeList;
+    }
 }

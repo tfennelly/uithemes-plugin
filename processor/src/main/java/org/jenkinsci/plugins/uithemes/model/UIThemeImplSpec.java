@@ -21,12 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes;
+package org.jenkinsci.plugins.uithemes.model;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPluginTest {
+public class UIThemeImplSpec {
 
+    public Map<String, UIThemeImplSpecProperty> properties = new LinkedHashMap<String, UIThemeImplSpecProperty>();
 
 }

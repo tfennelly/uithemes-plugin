@@ -25,6 +25,8 @@ package org.jenkinsci.plugins.uithemes.model;
 
 import org.jenkinsci.plugins.uithemes.less.URLResource;
 
+import javax.xml.namespace.QName;
+
 /**
  * UI Theme Contribution.
  * <p/>
@@ -45,6 +47,8 @@ public class UIThemeContribution {
     private String themeImplName;
     private URLResource lessResource;
 
+    // TODO: Maybe support Javascript contributions?
+
     public UIThemeContribution(String themeName, String themeImplName, URLResource lessResource) {
         this.themeName = themeName;
         this.themeImplName = themeImplName;
@@ -61,6 +65,10 @@ public class UIThemeContribution {
 
     public URLResource getLessResource() {
         return lessResource;
+    }
+
+    public QName getQName() {
+        return new QName(themeName + ":" + themeImplName, lessResource.toString());
     }
 
     @Override

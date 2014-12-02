@@ -73,6 +73,9 @@ public class UITheme {
                 return uiThemeImpl;
             }
         }
+        if (!implementations.isEmpty()) {
+            return implementations.values().iterator().next();
+        }
         return null;
     }
 

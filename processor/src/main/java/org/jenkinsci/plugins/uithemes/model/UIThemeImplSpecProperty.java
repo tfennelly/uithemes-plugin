@@ -21,12 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes;
+package org.jenkinsci.plugins.uithemes.model;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPluginTest {
+public class UIThemeImplSpecProperty {
 
+    public Type type = Type.STRING;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String defaultValue;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String[] permittedValues;
 
+    public static enum Type {
+        STRING,
+        NUMBER,
+        COLOR
+    }
 }

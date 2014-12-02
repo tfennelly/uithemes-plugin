@@ -189,7 +189,7 @@ public class URLResource implements Resource {
             String themeVariableName = extractThemeVariableName(relativeResourcePath);
 
             if (themeVariableName != null) {
-                String themeConfig = themesProcessor.getThemeVariables().getProperty("theme-" + themeVariableName);
+                String themeConfig = "TODO: fix me";
                 if (themeConfig != null) {
                     // Try for the named theme config LESS resource e.g. "classic-icons.less"
                     String namedThemeResource = relativeResourcePath.replace("#" + themeVariableName, themeConfig + "-" + themeVariableName);

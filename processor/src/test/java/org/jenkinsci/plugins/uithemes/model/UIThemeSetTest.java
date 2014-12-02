@@ -34,39 +34,39 @@ public class UIThemeSetTest {
 
     @Test
     public void test() {
-        UIThemeSet registry = new UIThemeSet();
+        UIThemeSet uiThemeSet = new UIThemeSet();
         UIThemeContribution classicIcons = new UIThemeContribution("icon", "classic", new URLResource("./icons/classic-base.less"));
 
         // Should return false if the theme is not registered.
-        Assert.assertFalse(registry.contribute(classicIcons));
+        Assert.assertFalse(uiThemeSet.contribute(classicIcons));
 
-        registry.registerTheme("icon", "Jenkins Icon Theme");
-        Assert.assertEquals("[icon]", registry.getThemeNames().toString());
+        uiThemeSet.registerTheme("icon", "Jenkins Icon Theme");
+        Assert.assertEquals("[icon]", uiThemeSet.getThemeNames().toString());
 
         // Should still return false because the theme implementation is not registered.
-        Assert.assertFalse(registry.contribute(classicIcons));
+        Assert.assertFalse(uiThemeSet.contribute(classicIcons));
 
         // Register the "classic" implementation of the icons theme
-        registry.registerThemeImpl("icon", "classic", "Classic Jenkins Icons");
-        Assert.assertEquals("[classic]", registry.getThemeImplNames("icon").toString());
+        uiThemeSet.registerThemeImpl("icon", "classic", "Classic Jenkins Icons");
+        Assert.assertEquals("[classic]", uiThemeSet.getThemeImplNames("icon").toString());
 
         // Should now register the classic icon contribution.
-        Assert.assertTrue(registry.contribute(classicIcons));
+        Assert.assertTrue(uiThemeSet.contribute(classicIcons));
 
         // make another contribution to the classic icons
-        Assert.assertTrue(registry.contribute(new UIThemeContribution("icon", "classic", new URLResource("./icons/classic-some-other-styles.less"))));
+        Assert.assertTrue(uiThemeSet.contribute(new UIThemeContribution("icon", "classic", new URLResource("./icons/classic-some-other-styles.less"))));
 
-        Assert.assertEquals("[./icons/classic-base.less, ./icons/classic-some-other-styles.less]", registry.getThemeImplContributions("icon", "classic").toString());
+        Assert.assertEquals("[./icons/classic-base.less, ./icons/classic-some-other-styles.less]", uiThemeSet.getThemeImplContributions("icon", "classic").toString());
 
         // Add another implementation for the icons theme...
 
-        registry.registerThemeImpl("icon", "font-awesome", "FontAwesome Jenkins Icons");
-        Assert.assertEquals("[classic, font-awesome]", registry.getThemeImplNames("icon").toString());
-        Assert.assertEquals("[]", registry.getThemeImplContributions("icon", "font-awesome").toString());
+        uiThemeSet.registerThemeImpl("icon", "font-awesome", "FontAwesome Jenkins Icons");
+        Assert.assertEquals("[classic, font-awesome]", uiThemeSet.getThemeImplNames("icon").toString());
+        Assert.assertEquals("[]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
 
-        registry.contribute(new UIThemeContribution("icon", "font-awesome", new URLResource("./icons/font-awesome.less")));
-        Assert.assertEquals("[./icons/font-awesome.less]", registry.getThemeImplContributions("icon", "font-awesome").toString());
+        uiThemeSet.contribute(new UIThemeContribution("icon", "font-awesome", new URLResource("./icons/font-awesome.less")));
+        Assert.assertEquals("[./icons/font-awesome.less]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
 
-        Assert.assertTrue(registry.contribute(classicIcons));
+        Assert.assertTrue(uiThemeSet.contribute(classicIcons));
     }
 }

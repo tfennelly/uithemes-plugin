@@ -76,13 +76,14 @@ public class UIThemeSet {
         return themes.get(name);
     }
 
-    public boolean registerThemeImpl(String themeName, String themeImplName, String themeImplDescription) {
+    public UIThemeImplementation registerThemeImpl(String themeName, String themeImplName, String themeImplDescription) {
         UITheme theme = getTheme(themeName);
         if (theme == null) {
             LOGGER.log(Level.WARNING, "Theme '{0}' is not registered. Cannot register implementation '{1}'.", new String [] {themeName, themeImplName});
         }
-        theme.registerImpl(new UIThemeImplementation(themeName, themeImplName, themeImplDescription));
-        return true;
+        UIThemeImplementation impl = new UIThemeImplementation(themeName, themeImplName, themeImplDescription);
+        theme.registerImpl(impl);
+        return impl;
     }
 
     public boolean contribute(UIThemeContribution contribution) {

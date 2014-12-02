@@ -21,12 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes;
+package org.jenkinsci.plugins.uithemes.util;
+
+import hudson.model.User;
+import jenkins.model.IdStrategy;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+
+import java.io.File;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPluginTest {
+public class JenkinsUtilTestSetup {
 
+    public static void setup() throws NoSuchMethodException {
+        JenkinsUtil.JENKINS_USER_HOME = new File("./target/jenkins-home/users");
+        FileUtils.deleteQuietly(JenkinsUtil.JENKINS_USER_HOME);
+        JenkinsUtil.JENKINS_USER_HOME.mkdirs();
+        Assert.assertNotNull("Test env running against a version of Jenkins older than version 1.566?", JenkinsUtil.idStrategy);
+        JenkinsUtil.idStrategy = JenkinsUtilTestSetup.class.getMethod("mockIdStrategyMethod");
+    }
 
+    public static File mkUserDir(User user) {
+        File userDir = new File(JenkinsUtil.JENKINS_USER_HOME, user.getId().toLowerCase());
+        userDir.mkdirs();
+        return userDir;
+    }
+
+    public static IdStrategy mockIdStrategyMethod() {
+        return IdStrategy.CASE_INSENSITIVE;
+    }
 }

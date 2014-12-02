@@ -23,28 +23,22 @@
  */
 package org.jenkinsci.plugins.uithemes;
 
-import hudson.PluginManager;
-import hudson.PluginWrapper;
-import hudson.util.PluginServletFilter;
+import hudson.model.User;
+import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.uithemes.less.LESSProcessor;
 import org.jenkinsci.plugins.uithemes.less.URLResource;
+import org.jenkinsci.plugins.uithemes.model.UITheme;
+import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
+import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
+import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
+import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
+import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,161 +50,150 @@ public class UIThemesProcessor {
     private static final Logger LOGGER = Logger.getLogger(UIThemesProcessor.class.getName());
 
     private final LESSProcessor lessProcessor = new LESSProcessor();
+    private final List<UIThemeContributor> contributors = new ArrayList<UIThemeContributor>();
 
-    private byte[] coreCSSBytes = new byte[0];
-    private byte[] pluginCSSBytes = new byte[0];
-    private Properties themeVariables = new Properties();
-
-    protected StylesFilter filter;
-
-    public UIThemesProcessor() {
-        // TODO: Get the theme variables from the UI i.e. allow the user to configure themes
-        themeVariables.setProperty("theme-icons", System.getProperty("theme-icons", "classic"));
-
-        try {
-            filter = new StylesFilter();
-            registerStylesFilter(filter);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to install StylesFilter.", e);
-        }
+    protected List<UIThemeContributor> getContributors() {
+        return contributors;
     }
 
-    public void assembleCoreStyles() {
-        if (filter.coreStyleResource != null) {
-            try {
-                StringBuilder stylesBuilder = new StringBuilder();
-
-                addGenerationTime(stylesBuilder);
-                stylesBuilder.append(lessProcessor.process(filter.coreStyleResource));
-                coreCSSBytes = stylesBuilder.toString().getBytes(Charset.forName("UTF-8"));
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, String.format("Error processing core styles (%s).", filter.coreStyleResource.getName()), e);
-            }
-        } else {
-            LOGGER.log(Level.INFO, "UI Themes plugin installed on Jenkins that does not define core LESS style resources.");
-        }
+    public UIThemesProcessor addContributor(UIThemeContributor contributor) {
+        contributors.add(contributor);
+        return this;
     }
 
-    public void assemblePluginStyles(PluginManager pluginManager) {
-        List<PluginWrapper> plugins = pluginManager.getPlugins();
-        StringBuilder stylesBuilder = new StringBuilder();
+    public UIThemesProcessor removeContributor(UIThemeContributor contributor) {
+        contributors.remove(contributor);
+        return this;
+    }
 
-        addGenerationTime(stylesBuilder);
+    public File getUserThemesCSS(User user) throws IOException {
+        File userHome = JenkinsUtil.getJenkinsUserHome(user);
 
-        for (PluginWrapper plugin : plugins) {
-            try {
-                URL pluginLessURL = getPluginLESSStyleResourceURL(plugin);
-                URLResource pluginLessURLResource = new URLResource(pluginLessURL);
+        if (userHome == null || !userHome.exists()) {
+            userHome = JenkinsUtil.JENKINS_USER_HOME;
+        }
 
-                if (pluginLessURL != null && pluginLessURLResource.exists(Level.FINEST)) {
-                    stylesBuilder.append("/* ------------------------------------------------------------------------------\n");
-                    stylesBuilder.append("   Styles for plugin: ").append(plugin.getDisplayName()).append("\n");
-                    stylesBuilder.append("   ------------------------------------------------------------------------------ */\n");
+        File cssFile = getUserThemesFile(userHome);
 
-                    pluginLessURLResource.setThemesProcessor(this);
-                    pluginLessURLResource.setCoreVariables(filter.coreVariablesResource);
-                    stylesBuilder.append(lessProcessor.process(pluginLessURLResource));
-                    stylesBuilder.append("\n");
-                    LOGGER.log(Level.FINE, String.format("LESS styles processed and added for plugin '%s'.", plugin.getDisplayName()));
-                } else {
-                    LOGGER.log(Level.FINE, String.format("No LESS styles defined for plugin '%s'.", plugin.getDisplayName()));
+        if (cssFile.exists()) {
+            return cssFile;
+        }
+
+        return generateUIThemeSet(userHome);
+    }
+
+
+    public synchronized void deleteAllUserThemes() throws IOException {
+        LOGGER.log(Level.FINE, "Deleting all user theme styles.");
+
+        // Delete the anonymous theme css
+        File cssFile = getUserThemesFile(JenkinsUtil.JENKINS_USER_HOME);
+        if (cssFile.exists()) {
+            cssFile.delete();
+        }
+
+        // Delete the theme css for each user dir
+        File[] userHomes = JenkinsUtil.JENKINS_USER_HOME.listFiles();
+        if (userHomes != null && userHomes.length > 0) {
+            for (File userHome : userHomes) {
+                if (userHome.isDirectory()) {
+                    cssFile = getUserThemesFile(userHome);
+                    if (cssFile.exists()) {
+                        cssFile.delete();
+                    }
                 }
-            } catch (Exception e) {
-                stylesBuilder.append("       /* Error processing plugin styles - corrupt LESS definition. */\n\n");
-                LOGGER.log(Level.WARNING, String.format("Error processing LESS styles for plugin '%s'.", plugin.getDisplayName()), e);
-            }
-        }
-
-        if (stylesBuilder.length() > 0) {
-            try {
-                pluginCSSBytes = stylesBuilder.toString().getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.log(Level.WARNING, "Unexpected UTF-8 encoding error.", e);
             }
         }
     }
 
-    public Properties getThemeVariables() {
-        return themeVariables;
+    public UIThemeSet getUiThemeSet(File userHome) {
+        UIThemeSet themeSet = new UIThemeSet();
+        for (UIThemeContributor contributor : contributors) {
+            contributor.contribute(themeSet, userHome);
+        }
+        return themeSet;
+    }
+
+    private synchronized File generateUIThemeSet(File userHome) throws IOException {
+        userHome = normalizeUserHome(userHome);
+
+        File cssFile = getUserThemesFile(userHome);
+        if (cssFile.exists()) {
+            return cssFile;
+        }
+
+        if (userHome == JenkinsUtil.JENKINS_USER_HOME) {
+            LOGGER.log(Level.FINE, "Assembling default UI themes.");
+        }
+
+        UIThemeSet themeSet = getUiThemeSet(userHome);
+
+        UserUIThemeConfiguration themeConfiguration = UserUIThemeConfiguration.fromUserHome(userHome);
+        StringBuilder themeStylesBuilder = new StringBuilder();
+
+        // Generate the user theme styles based on the available themes and the users
+        // theme selections, using the theme default implementation where the user has not made an
+        // implementation selection for a given theme.
+        addGenerationTime(themeStylesBuilder);
+        for (String themeName : themeSet.getThemeNames()) {
+            UITheme theme = themeSet.getTheme(themeName);
+            UIThemeImplementation impl = null;
+
+            if (themeConfiguration != null) {
+                String themeSelection = themeConfiguration.getUserThemeSelection(themeName);
+                if (themeSelection != null) {
+                    impl = theme.getImpl(themeSelection);
+                }
+            }
+            if (impl == null) {
+                impl = theme.getDefaultImpl();
+            }
+            if (impl != null) {
+                for (UIThemeContribution themeContribution : impl.getContributions()) {
+                    URLResource lessResource = themeContribution.getLessResource();
+                    if (lessResource != null) {
+                        try {
+                            addContributionHeader(themeStylesBuilder, themeContribution);
+                            themeStylesBuilder.append(lessProcessor.process(lessResource));
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING, String.format("Error processing LESS resource contribution '%s' from theme implementation '%s'.",
+                                    lessResource.getName(), themeContribution.getQName()), e);
+                        }
+                    } else {
+                        LOGGER.log(Level.WARNING, "Theme implementation '{0}' returned a null LESS resource.", themeContribution.getQName());
+                    }
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Unknown/Unimplemented theme named '{0}'.", themeName);
+            }
+        }
+
+        // Store the generated theme CSS in the user dir.
+        FileUtils.write(cssFile, themeStylesBuilder.toString(), "UTF-8");
+
+        return cssFile;
+    }
+
+    private File normalizeUserHome(File userHome) {
+        if (userHome == null || !userHome.exists()) {
+            userHome = JenkinsUtil.JENKINS_USER_HOME;
+        }
+        return userHome;
+    }
+
+    public static File getUserThemesFile(File userHome) {
+        return new File(userHome, "styles/themes.css");
     }
 
     private void addGenerationTime(StringBuilder stylesBuilder) {
         stylesBuilder.append("/*\n");
-        stylesBuilder.append(String.format("      Styles generated %s\n", (new Date()).toString()));
+        stylesBuilder.append(String.format("      Generated %s\n", (new Date()).toString()));
         stylesBuilder.append("*/\n");
     }
 
-    protected void registerStylesFilter(StylesFilter filter) throws ServletException {
-        PluginServletFilter.addFilter(filter);
-    }
-
-    protected void writeCSSResponse(byte[] cssBytes, HttpServletResponse httpServletResponse) throws IOException {
-        httpServletResponse.setContentType("text/css;charset=UTF-8");
-        httpServletResponse.setContentLength(cssBytes.length);
-        httpServletResponse.getOutputStream().write(cssBytes);
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    protected class StylesFilter implements Filter {
-
-        private URLResource coreStyleResource;
-        private URLResource coreVariablesResource;
-
-        public void init(FilterConfig config) throws ServletException {
-            coreVariablesResource = getAppResource("/css/variables.less", config);
-            if (coreVariablesResource == null) {
-                coreVariablesResource = getClasspathResource("/less/fallback-core-variables.less");
-            }
-
-            coreStyleResource = getAppResource("/css/style.less", config);
-            if (coreStyleResource != null) {
-                coreStyleResource.setCoreVariables(coreVariablesResource);
-            }
-        }
-
-        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            String pathInfo = httpServletRequest.getPathInfo();
-
-            if (pathInfo.equals("/styles/core.css")) {
-                writeCSSResponse(coreCSSBytes, (HttpServletResponse) response);
-            } else if (pathInfo.equals("/styles/plugins.css")) {
-                writeCSSResponse(pluginCSSBytes, (HttpServletResponse) response);
-            } else {
-                chain.doFilter(request, response);
-            }
-        }
-
-        public void destroy() {
-        }
-
-        public URLResource getAppResource(String resPath, FilterConfig config) throws ServletException {
-            try {
-                URL url = config.getServletContext().getResource(resPath);
-                if (url != null) {
-                    return new URLResource(url);
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, String.format("Error getting resource URL for '%s'.", resPath), e);
-            }
-            return null;
-        }
-
-        public URLResource getClasspathResource(String resPath) {
-            try {
-                URL url = UIThemesProcessor.class.getResource(resPath);
-                if (url != null) {
-                    return new URLResource(url);
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, String.format("Error getting resource URL for '%s'.", resPath), e);
-            }
-            return null;
-        }
-    }
-
-
-    public URL getPluginLESSStyleResourceURL(PluginWrapper plugin) throws MalformedURLException {
-        return URLResource.getResourceURL("less/style.less", plugin.baseResourceURL);
+    private void addContributionHeader(StringBuilder stylesBuilder, UIThemeContribution themeContribution) {
+        stylesBuilder.append("/*\n");
+        stylesBuilder.append(String.format("      Theme Contribution '%s'\n", themeContribution.getQName()));
+        stylesBuilder.append("*/\n");
     }
 }

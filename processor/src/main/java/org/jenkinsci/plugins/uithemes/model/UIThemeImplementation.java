@@ -42,6 +42,7 @@ public class UIThemeImplementation {
     private String themeName;
     private String description;
     private boolean isDefault = false;
+    private UIThemeImplSpec themeImplSpec;
     private List<UIThemeContribution> contributions = new ArrayList<UIThemeContribution>();
 
     public UIThemeImplementation(String themeName, String implName, String description) {
@@ -68,6 +69,14 @@ public class UIThemeImplementation {
 
     public void setDefault(boolean aDefault) {
         isDefault = aDefault;
+    }
+
+    public UIThemeImplSpec getThemeImplSpec() {
+        return themeImplSpec;
+    }
+
+    public void setThemeImplSpec(UIThemeImplSpec themeImplSpec) {
+        this.themeImplSpec = themeImplSpec;
     }
 
     public List<UIThemeContribution> getContributions() {
