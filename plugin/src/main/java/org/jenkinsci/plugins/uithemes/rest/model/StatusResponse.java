@@ -25,6 +25,9 @@ package org.jenkinsci.plugins.uithemes.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -36,10 +39,34 @@ public class StatusResponse {
     public String message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String detail;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Object data;
+
+    public <T> T dataTo(Class<T> to) throws IOException {
+        if (data == null) {
+            return null;
+        }
+        if (to.isInstance(data)) {
+            return to.cast(data);
+        }
+        if (data instanceof String) {
+            return JSONReadWrite.fromString((String) data, to);
+        } else {
+            String asString = JSONReadWrite.toString(data);
+            return JSONReadWrite.fromString(asString, to);
+        }
+    }
 
     public static StatusResponse OK() {
         StatusResponse statusResponse = new StatusResponse();
         statusResponse.status = "OK";
+        return statusResponse;
+    }
+
+    public static StatusResponse OK(Object data) {
+        StatusResponse statusResponse = new StatusResponse();
+        statusResponse.status = "OK";
+        statusResponse.data = data;
         return statusResponse;
     }
 

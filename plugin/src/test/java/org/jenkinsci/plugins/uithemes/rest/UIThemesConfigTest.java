@@ -47,7 +47,8 @@ public class UIThemesConfigTest {
         // create a user
         User.get("tfennelly", true, Collections.emptyMap());
 
-        UserUIThemeConfiguration userThemeConfig = TestUtil.getJSON("user/tfennelly/uithemes-rest/config", UserUIThemeConfiguration.class, jenkinsRule);
+        StatusResponse response = TestUtil.getJSON("user/tfennelly/uithemes-rest/config", StatusResponse.class, jenkinsRule);
+        UserUIThemeConfiguration userThemeConfig = response.dataTo(UserUIThemeConfiguration.class);
 
         // should be no configured themes at start
         Assert.assertEquals(0, userThemeConfig.userThemes.size());
@@ -55,11 +56,12 @@ public class UIThemesConfigTest {
         // configure some selections and save...
         userThemeConfig.addSelection("icon", "font-awesome");
         userThemeConfig.addSelection("console", "dark-terminal");
-        StatusResponse response = TestUtil.putJSON("user/tfennelly/uithemes-rest/config", userThemeConfig, jenkinsRule);
+        response = TestUtil.putJSON("user/tfennelly/uithemes-rest/config", userThemeConfig, jenkinsRule);
         Assert.assertEquals("OK", response.status);
 
         // Get it again and check...
-        userThemeConfig = TestUtil.getJSON("user/tfennelly/uithemes-rest/config", UserUIThemeConfiguration.class, jenkinsRule);
+        response = TestUtil.getJSON("user/tfennelly/uithemes-rest/config", StatusResponse.class, jenkinsRule);
+        userThemeConfig = response.dataTo(UserUIThemeConfiguration.class);
         Assert.assertEquals(2, userThemeConfig.userThemes.size());
         Assert.assertEquals("icon", userThemeConfig.userThemes.get(0).themeName);
         Assert.assertEquals("font-awesome", userThemeConfig.userThemes.get(0).implName);

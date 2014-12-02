@@ -29,6 +29,9 @@ import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
 import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.model.UITheme;
+import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
+import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
 import org.jenkinsci.plugins.uithemes.rest.model.StatusResponse;
@@ -67,7 +70,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 if (themeConfiguration == null) {
                     themeConfiguration = new UserUIThemeConfiguration();
                 }
-                return new JSONResponse(themeConfiguration);
+                return new JSONResponse(StatusResponse.OK(themeConfiguration));
             } else if (method.equals("PUT")) {
                 UserUIThemeConfiguration themeConfiguration = JSONReadWrite.fromRequest(req, UserUIThemeConfiguration.class);
                 UserUIThemeConfiguration.toUserHome(user, themeConfiguration);
@@ -85,17 +88,59 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
 
         try {
             if (method.equals("GET")) {
-                UIThemesPlugin plugin = getPlugin();
-                UIThemesProcessor themeProcessor = plugin.getThemesProcessor();
-                UIThemeSet themeSet = themeProcessor.getUiThemeSet(userHome);
+                UIThemeSet themeSet = getUiThemeSet();
 
-                return new JSONResponse(UIThemeList.fromInternal(themeSet));
+                return new JSONResponse(StatusResponse.OK(UIThemeList.fromInternal(themeSet)));
             } else {
                 return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
             }
         } catch (Exception e) {
             return new JSONResponse(StatusResponse.ERROR(e));
         }
+    }
+
+    public final HttpResponse doImplspec(StaplerRequest req) {
+        String method = req.getMethod().toUpperCase();
+
+        try {
+            if (method.equals("GET")) {
+                String themeName = req.getParameter("theme-name");
+                if (themeName == null) {
+                    return new JSONResponse(StatusResponse.ERROR("Request parameter 'theme-name' is required."));
+                }
+                String themeImplName = req.getParameter("theme-impl-name");
+                if (themeImplName == null) {
+                    return new JSONResponse(StatusResponse.ERROR("Request parameter 'theme-impl-name' is required."));
+                }
+
+                UIThemeSet themeSet = getUiThemeSet();
+                UITheme theme = themeSet.getTheme(themeName);
+                if (theme == null) {
+                    return new JSONResponse(StatusResponse.ERROR(String.format("Unknown theme '%s'.", themeName)));
+                }
+                UIThemeImplementation impl = theme.getImpl(themeImplName);
+                if (impl == null) {
+                    return new JSONResponse(StatusResponse.ERROR(String.format("Unknown theme implementation '%s' on theme named '%s'.", themeImplName, themeName)));
+                }
+
+                UIThemeImplSpec themeImplSpec = impl.getThemeImplSpec();
+                if (themeImplSpec == null) {
+                    return new JSONResponse(StatusResponse.ERROR(String.format("Theme implementation '%s:%s' does not specify an implementation spec i.e. it is not configurable.", themeImplName, themeName)));
+                }
+
+                return new JSONResponse(StatusResponse.OK(themeImplSpec));
+            } else {
+                return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
+            }
+        } catch (Exception e) {
+            return new JSONResponse(StatusResponse.ERROR(e));
+        }
+    }
+
+    private UIThemeSet getUiThemeSet() {
+        UIThemesPlugin plugin = getPlugin();
+        UIThemesProcessor themeProcessor = plugin.getThemesProcessor();
+        return themeProcessor.getUiThemeSet(userHome);
     }
 
     private UIThemesPlugin getPlugin() {

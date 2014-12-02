@@ -33,6 +33,7 @@ import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpecProperty;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
+import org.jenkinsci.plugins.uithemes.rest.model.StatusResponse;
 import org.jenkinsci.plugins.uithemes.rest.model.UIThemeList;
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,16 +75,20 @@ public class UIThemesListThemesTest {
         header_lite.setThemeImplSpec(new UIThemeImplSpec());
         UIThemeImplSpecProperty backgroundColor = new UIThemeImplSpecProperty();
         backgroundColor.type = UIThemeImplSpecProperty.Type.COLOR;
+        backgroundColor.defaultValue = "#FFF";
         header_lite.themeImplSpec.properties.put("backgroundColor", backgroundColor);
     }
 
     @Test
-    public void test_GET() throws Exception {
+    public void test_GET_themes() throws Exception {
         // create a user
         User.get("tfennelly", true, Collections.emptyMap());
 
         // No themes registered...
-        UIThemeList uiThemes = TestUtil.getJSON("user/tfennelly/uithemes-rest/themes", UIThemeList.class, jenkinsRule);
+        StatusResponse response = TestUtil.getJSON("user/tfennelly/uithemes-rest/themes", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("OK", response.status);
+        UIThemeList uiThemes = response.dataTo(UIThemeList.class);
+        Assert.assertEquals(0, uiThemes.themes.size());
         Assert.assertEquals(0, uiThemes.themes.size());
 
         // register a few theme contributors + implementations
@@ -97,7 +102,9 @@ public class UIThemesListThemesTest {
         plugin.addThemeContributor(header_lite);
 
         // fetch them again...
-        uiThemes = TestUtil.getJSON("user/tfennelly/uithemes-rest/themes", UIThemeList.class, jenkinsRule);
+        response = TestUtil.getJSON("user/tfennelly/uithemes-rest/themes", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("OK", response.status);
+        uiThemes = response.dataTo(UIThemeList.class);
 
         // should be 3 themes
         Assert.assertEquals(3, uiThemes.themes.size());
@@ -120,6 +127,66 @@ public class UIThemesListThemesTest {
         Assert.assertEquals(true, uiThemes.themes.get(2).implementations.get(1).isConfigurable);
     }
 
+    @Test
+    public void test_GET_theme_impl_spec_bad_params() throws Exception {
+        // create a user
+        User.get("tfennelly", true, Collections.emptyMap());
+
+        UIThemesPlugin plugin = UIThemesPlugin.getInstance();
+        plugin.addThemeContributor(icon_default);
+        plugin.addThemeContributor(icon_font_awesome);
+        plugin.addThemeContributor(status_balls_default);
+        plugin.addThemeContributor(status_balls_doony);
+        plugin.addThemeContributor(status_balls_css3);
+        plugin.addThemeContributor(header_default);
+        plugin.addThemeContributor(header_lite);
+
+        // Missing parameters should result in errors
+        StatusResponse response = TestUtil.getJSON("user/tfennelly/uithemes-rest/implspec", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("ERROR", response.status);
+        Assert.assertEquals("Request parameter 'theme-name' is required.", response.message);
+        response = TestUtil.getJSON("user/tfennelly/uithemes-rest/implspec?theme-name=header", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("ERROR", response.status);
+        Assert.assertEquals("Request parameter 'theme-impl-name' is required.", response.message);
+
+        // unknown theme name should cause an error
+        response = TestUtil.getJSON("user/tfennelly/uithemes-rest/implspec?theme-name=XXX&theme-impl-name=lite", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("ERROR", response.status);
+        Assert.assertEquals("Unknown theme 'XXX'.", response.message);
+
+        // unknown theme impl name should cause an error
+        response = TestUtil.getJSON("user/tfennelly/uithemes-rest/implspec?theme-name=header&theme-impl-name=XXX", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("ERROR", response.status);
+        Assert.assertEquals("Unknown theme implementation 'XXX' on theme named 'header'.", response.message);
+
+        // A theme impl that does not specify a spec should cause an error
+        response = TestUtil.getJSON("user/tfennelly/uithemes-rest/implspec?theme-name=header&theme-impl-name=default", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("ERROR", response.status);
+        Assert.assertEquals("Theme implementation 'default:header' does not specify an implementation spec i.e. it is not configurable.", response.message);
+    }
+
+    @Test
+    public void test_GET_theme_impl_spec() throws Exception {
+        // create a user
+        User.get("tfennelly", true, Collections.emptyMap());
+
+        UIThemesPlugin plugin = UIThemesPlugin.getInstance();
+        plugin.addThemeContributor(icon_default);
+        plugin.addThemeContributor(icon_font_awesome);
+        plugin.addThemeContributor(status_balls_default);
+        plugin.addThemeContributor(status_balls_doony);
+        plugin.addThemeContributor(status_balls_css3);
+        plugin.addThemeContributor(header_default);
+        plugin.addThemeContributor(header_lite);
+
+        StatusResponse response = TestUtil.getJSON("user/tfennelly/uithemes-rest/implspec?theme-name=header&theme-impl-name=lite", StatusResponse.class, jenkinsRule);
+        Assert.assertEquals("OK", response.status);
+        UIThemeImplSpec implSpec = response.dataTo(UIThemeImplSpec.class);
+        UIThemeImplSpecProperty bgColor = implSpec.properties.get("backgroundColor");
+        Assert.assertNotNull(bgColor);
+        Assert.assertEquals(UIThemeImplSpecProperty.Type.COLOR, bgColor.type);
+        Assert.assertEquals("#FFF", bgColor.defaultValue);
+    }
 
     private class MockUIThemeContributor implements UIThemeContributor {
         private UIThemeContribution contribution;
