@@ -93,7 +93,7 @@ public class UIThemesProcessorTest {
 
         File cssFile = processor.getUserThemesCSS(user);
 
-        Assert.assertEquals("./target/jenkins-home/users/styles/themes.css", cssFile.getPath());
+        Assert.assertEquals("./target/jenkins-home/users/themes/themes.css", cssFile.getPath());
         assertDefaultStylesOnly(cssFile);
     }
 
@@ -104,7 +104,7 @@ public class UIThemesProcessorTest {
         User user = createUser("tfennelly");
         File cssFile = processor.getUserThemesCSS(user);
 
-        Assert.assertEquals("./target/jenkins-home/users/tfennelly/styles/themes.css", cssFile.getPath());
+        Assert.assertEquals("./target/jenkins-home/users/tfennelly/themes/themes.css", cssFile.getPath());
         assertDefaultStylesOnly(cssFile);
     }
 
@@ -122,7 +122,7 @@ public class UIThemesProcessorTest {
 
         File cssFile = processor.getUserThemesCSS(user);
 
-        Assert.assertEquals("./target/jenkins-home/users/tfennelly/styles/themes.css", cssFile.getPath());
+        Assert.assertEquals("./target/jenkins-home/users/tfennelly/themes/themes.css", cssFile.getPath());
 
         // Check that the default contributions have been replaced with he above selections
         // in the generated CSS
@@ -200,7 +200,7 @@ public class UIThemesProcessorTest {
     }
 
     private File getUserThemesFile(User user) {
-        return UIThemesProcessor.getUserThemesFile(JenkinsUtil.getJenkinsUserHome(user));
+        return UIThemesProcessor.getUserThemesCSSFile(JenkinsUtil.getJenkinsUserHome(user));
     }
 
     private User createUser(String username) {

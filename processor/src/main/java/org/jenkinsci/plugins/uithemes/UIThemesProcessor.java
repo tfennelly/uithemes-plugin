@@ -79,7 +79,7 @@ public class UIThemesProcessor {
             userHome = JenkinsUtil.JENKINS_USER_HOME;
         }
 
-        File cssFile = getUserThemesFile(userHome);
+        File cssFile = getUserThemesCSSFile(userHome);
 
         if (cssFile.exists()) {
             return cssFile;
@@ -93,7 +93,7 @@ public class UIThemesProcessor {
         LOGGER.log(Level.FINE, "Deleting all user theme styles.");
 
         // Delete the anonymous theme css
-        File cssFile = getUserThemesFile(JenkinsUtil.JENKINS_USER_HOME);
+        File cssFile = getUserThemesCSSFile(JenkinsUtil.JENKINS_USER_HOME);
         if (cssFile.exists()) {
             cssFile.delete();
         }
@@ -103,7 +103,7 @@ public class UIThemesProcessor {
         if (userHomes != null && userHomes.length > 0) {
             for (File userHome : userHomes) {
                 if (userHome.isDirectory()) {
-                    cssFile = getUserThemesFile(userHome);
+                    cssFile = getUserThemesCSSFile(userHome);
                     if (cssFile.exists()) {
                         cssFile.delete();
                     }
@@ -125,7 +125,7 @@ public class UIThemesProcessor {
     private synchronized File generateUIThemeSet(File userHome) throws IOException {
         userHome = normalizeUserHome(userHome);
 
-        File cssFile = getUserThemesFile(userHome);
+        File cssFile = getUserThemesCSSFile(userHome);
         if (cssFile.exists()) {
             return cssFile;
         }
@@ -189,16 +189,20 @@ public class UIThemesProcessor {
         return userHome;
     }
 
-    public static File getUserStylesDir(File userHome) {
-        return new File(userHome, "styles");
+    public static File getUserThemesDir(File userHome) {
+        return new File(userHome, "themes");
     }
 
-    public static File getUserThemesFile(File userHome) {
-        return new File(getUserStylesDir(userHome), "themes.css");
+    public static File getUserThemesCSSFile(File userHome) {
+        return new File(getUserThemesDir(userHome), "themes.css");
+    }
+
+    public static File getUserThemeImplDir(String themeName, String themeImplName, File userHome) {
+        return new File(getUserThemesDir(userHome), String.format("%s/%s", themeName, themeImplName));
     }
 
     public static File getUserThemeImplConfigFile(String themeName, String themeImplName, File userHome) {
-        return new File(getUserStylesDir(userHome), String.format("%s/%s/config.json", themeName, themeImplName));
+        return new File(getUserThemeImplDir(themeName, themeImplName, userHome), "config.json");
     }
 
     public static Map<String, String> getUserThemeImplConfig(String themeName, String themeImplName, File userHome) throws IOException {
