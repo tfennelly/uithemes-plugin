@@ -25,20 +25,15 @@ package org.jenkinsci.plugins.uithemes;
 
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 
-import java.io.File;
-
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public interface UIThemeContributor {
 
     /**
-     * Contribute to the user theme set.
-     * <p/>
-     * Specific theme implementation configurations can be stored on a per user basis.
+     * Contribute to the theme set.
      *
      * @param themeSet The {@link UIThemeSet} to contribute to.
-     * @param userDir The current user directory.
      */
-    void contribute(UIThemeSet themeSet, File userDir);
+    void contribute(UIThemeSet themeSet);
 }

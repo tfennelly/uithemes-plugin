@@ -32,13 +32,16 @@ import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
+import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,18 +54,21 @@ public class UIThemesProcessor {
 
     private final LESSProcessor lessProcessor = new LESSProcessor();
     private final List<UIThemeContributor> contributors = new ArrayList<UIThemeContributor>();
+    private volatile UIThemeSet themeSet;
 
     protected List<UIThemeContributor> getContributors() {
         return contributors;
     }
 
-    public UIThemesProcessor addContributor(UIThemeContributor contributor) {
+    public synchronized UIThemesProcessor addContributor(UIThemeContributor contributor) {
         contributors.add(contributor);
+        themeSet = null; // recreate
         return this;
     }
 
-    public UIThemesProcessor removeContributor(UIThemeContributor contributor) {
+    public synchronized UIThemesProcessor removeContributor(UIThemeContributor contributor) {
         contributors.remove(contributor);
+        themeSet = null; // recreate
         return this;
     }
 
@@ -106,10 +112,12 @@ public class UIThemesProcessor {
         }
     }
 
-    public UIThemeSet getUiThemeSet(File userHome) {
-        UIThemeSet themeSet = new UIThemeSet();
-        for (UIThemeContributor contributor : contributors) {
-            contributor.contribute(themeSet, userHome);
+    public synchronized UIThemeSet getUiThemeSet() {
+        if (themeSet == null) {
+            themeSet = new UIThemeSet();
+            for (UIThemeContributor contributor : contributors) {
+                contributor.contribute(themeSet);
+            }
         }
         return themeSet;
     }
@@ -126,7 +134,7 @@ public class UIThemesProcessor {
             LOGGER.log(Level.FINE, "Assembling default UI themes.");
         }
 
-        UIThemeSet themeSet = getUiThemeSet(userHome);
+        UIThemeSet themeSet = getUiThemeSet();
 
         UserUIThemeConfiguration themeConfiguration = UserUIThemeConfiguration.fromUserHome(userHome);
         StringBuilder themeStylesBuilder = new StringBuilder();
@@ -189,8 +197,17 @@ public class UIThemesProcessor {
         return new File(getUserStylesDir(userHome), "themes.css");
     }
 
-    public static File getUserThemesThemeImplFile(String themeName, String themeImplName, File userHome) {
+    public static File getUserThemeImplConfigFile(String themeName, String themeImplName, File userHome) {
         return new File(getUserStylesDir(userHome), String.format("%s/%s/config.json", themeName, themeImplName));
+    }
+
+    public static Map<String, String> getUserThemeImplConfig(String themeName, String themeImplName, File userHome) throws IOException {
+        File themeImplConfigFile = getUserThemeImplConfigFile(themeName, themeImplName, userHome);
+        if (themeImplConfigFile.exists()) {
+            return JSONReadWrite.fromUTF8File(themeImplConfigFile, Map.class);
+        } else {
+            return Collections.emptyMap();
+        }
     }
 
     private void addGenerationTime(StringBuilder stylesBuilder) {

@@ -98,7 +98,7 @@ public abstract class AbstractUIThemesTest {
             return this;
         }
         @Override
-        public void contribute(UIThemeSet themeSet, File userDir) {
+        public void contribute(UIThemeSet themeSet) {
             if (themeSet.getThemeNames().isEmpty()) {
                 themeSet.registerTheme(icon_default.contribution.getThemeName(), "Icons");
                 themeSet.registerTheme(status_balls_default.contribution.getThemeName(), "Status Balls");

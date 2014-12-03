@@ -159,7 +159,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
             }
 
-            File themeImplConfigFile = UIThemesProcessor.getUserThemesThemeImplFile(nameParams.themeName, nameParams.themeImplName, userHome);
+            File themeImplConfigFile = UIThemesProcessor.getUserThemeImplConfigFile(nameParams.themeName, nameParams.themeImplName, userHome);
             if (method.equals("GET")) {
                 if (themeImplConfigFile.exists()) {
                     Map config = JSONReadWrite.fromUTF8File(themeImplConfigFile, Map.class);
@@ -207,7 +207,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
     private UIThemeSet getUiThemeSet() {
         UIThemesPlugin plugin = getPlugin();
         UIThemesProcessor themeProcessor = plugin.getThemesProcessor();
-        return themeProcessor.getUiThemeSet(userHome);
+        return themeProcessor.getUiThemeSet();
     }
 
     private UIThemesPlugin getPlugin() {

@@ -217,7 +217,7 @@ public class UIThemesProcessorTest {
             this.contribution = new UIThemeContribution(themeName, themeImplName, lessResource);
         }
         @Override
-        public void contribute(UIThemeSet themeSet, File userDir) {
+        public void contribute(UIThemeSet themeSet) {
             if (themeSet.getThemeNames().isEmpty()) {
                 themeSet.registerTheme(icon_default.contribution.getThemeName(), "Jenkins Icons");
                 themeSet.registerTheme(status_balls_default.contribution.getThemeName(), "Jenkins Status Balls");
