@@ -37,7 +37,7 @@ import java.util.Collections;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesConfigTest {
+public class UIThemesSelectionConfigTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();

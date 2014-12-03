@@ -181,8 +181,16 @@ public class UIThemesProcessor {
         return userHome;
     }
 
+    public static File getUserStylesDir(File userHome) {
+        return new File(userHome, "styles");
+    }
+
     public static File getUserThemesFile(File userHome) {
-        return new File(userHome, "styles/themes.css");
+        return new File(getUserStylesDir(userHome), "themes.css");
+    }
+
+    public static File getUserThemesThemeImplFile(String themeName, String themeImplName, File userHome) {
+        return new File(getUserStylesDir(userHome), String.format("%s/%s/config.json", themeName, themeImplName));
     }
 
     private void addGenerationTime(StringBuilder stylesBuilder) {

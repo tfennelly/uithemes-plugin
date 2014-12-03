@@ -24,7 +24,10 @@
 package org.jenkinsci.plugins.uithemes.util;
 
 import hudson.model.User;
+import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -81,6 +84,30 @@ public class JenkinsUtil {
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, String.format("Unexpected error while attempting to resolve the Jenkins user home dir name for user ID '%s'.", user.getId()), e);
             return null;
+        }
+    }
+
+    /**
+     * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+     */
+    public static class JenkinsUtilTestSetup {
+
+        public static void setup() throws NoSuchMethodException {
+            JENKINS_USER_HOME = new File("./target/jenkins-home/users");
+            FileUtils.deleteQuietly(JENKINS_USER_HOME);
+            JENKINS_USER_HOME.mkdirs();
+            Assert.assertNotNull("Test env running against a version of Jenkins older than version 1.566?", idStrategy);
+            idStrategy = JenkinsUtilTestSetup.class.getMethod("mockIdStrategyMethod");
+        }
+
+        public static File mkUserDir(User user) {
+            File userDir = new File(JENKINS_USER_HOME, user.getId().toLowerCase());
+            userDir.mkdirs();
+            return userDir;
+        }
+
+        public static IdStrategy mockIdStrategyMethod() {
+            return IdStrategy.CASE_INSENSITIVE;
         }
     }
 }

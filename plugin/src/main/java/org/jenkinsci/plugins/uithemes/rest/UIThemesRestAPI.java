@@ -44,6 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -61,6 +62,11 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
         return URL_BASE;
     }
 
+    /**
+     * Get the user's theme configuration i.e. selections etc.
+     * @param req The HTTP request.
+     * @return {@link UserUIThemeConfiguration} JSON serialized.
+     */
     public final HttpResponse doConfig(StaplerRequest req) {
         String method = req.getMethod().toUpperCase();
 
@@ -83,6 +89,11 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
         }
     }
 
+    /**
+     * Get the set of available/installed Themes.
+     * @param req The HTTP request.
+     * @return {@link UIThemeSet} JSON serialized.
+     */
     public final HttpResponse doThemes(StaplerRequest req) {
         String method = req.getMethod().toUpperCase();
 
@@ -99,33 +110,27 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
         }
     }
 
+    /**
+     * Get the {@link UIThemeImplSpec} for a named theme implementation.
+     * @param req The HTTP request. Request must contain {@code theme-name} and {@code theme-impl-name} params.
+     * @return {@link UIThemeImplSpec} JSON serialized.
+     * @see #doImplconfig
+     */
     public final HttpResponse doImplspec(StaplerRequest req) {
         String method = req.getMethod().toUpperCase();
 
         try {
             if (method.equals("GET")) {
-                String themeName = req.getParameter("theme-name");
-                if (themeName == null) {
-                    return new JSONResponse(StatusResponse.ERROR("Request parameter 'theme-name' is required."));
-                }
-                String themeImplName = req.getParameter("theme-impl-name");
-                if (themeImplName == null) {
-                    return new JSONResponse(StatusResponse.ERROR("Request parameter 'theme-impl-name' is required."));
-                }
-
-                UIThemeSet themeSet = getUiThemeSet();
-                UITheme theme = themeSet.getTheme(themeName);
-                if (theme == null) {
-                    return new JSONResponse(StatusResponse.ERROR(String.format("Unknown theme '%s'.", themeName)));
-                }
-                UIThemeImplementation impl = theme.getImpl(themeImplName);
-                if (impl == null) {
-                    return new JSONResponse(StatusResponse.ERROR(String.format("Unknown theme implementation '%s' on theme named '%s'.", themeImplName, themeName)));
+                UIThemeImplementation impl;
+                try {
+                    impl = getThemeImpl(req);
+                } catch (IllegalArgumentException e) {
+                    return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
                 }
 
                 UIThemeImplSpec themeImplSpec = impl.getThemeImplSpec();
                 if (themeImplSpec == null) {
-                    return new JSONResponse(StatusResponse.ERROR(String.format("Theme implementation '%s:%s' does not specify an implementation spec i.e. it is not configurable.", themeImplName, themeName)));
+                    return new JSONResponse(StatusResponse.ERROR(String.format("Theme implementation '%s:%s' does not specify an implementation spec i.e. it is not configurable.", impl.getName(), impl.getThemeName())));
                 }
 
                 return new JSONResponse(StatusResponse.OK(themeImplSpec));
@@ -135,6 +140,68 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
         } catch (Exception e) {
             return new JSONResponse(StatusResponse.ERROR(e));
         }
+    }
+
+    /**
+     * Get the user's configuration of a named theme implementation.
+     * @param req The HTTP request. Request must contain {@code theme-name} and {@code theme-impl-name} params.
+     * @return {@link java.util.Map} of name/value pairs, JSON serialized.
+     * @see #doImplspec
+     */
+    public final HttpResponse doImplconfig(StaplerRequest req) {
+        String method = req.getMethod().toUpperCase();
+
+        try {
+            ThemeImplNameRequestParamValues nameParams;
+            try {
+                nameParams = new ThemeImplNameRequestParamValues(req);
+            } catch (IllegalArgumentException e) {
+                return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
+            }
+
+            File themeImplConfigFile = UIThemesProcessor.getUserThemesThemeImplFile(nameParams.themeName, nameParams.themeImplName, userHome);
+            if (method.equals("GET")) {
+                if (themeImplConfigFile.exists()) {
+                    Map config = JSONReadWrite.fromUTF8File(themeImplConfigFile, Map.class);
+                    return new JSONResponse(StatusResponse.OK(config));
+                } else {
+                    return new JSONResponse(StatusResponse.OK(Collections.emptyMap()));
+                }
+            } else if (method.equals("PUT")) {
+                if (!themeImplConfigFile.exists()) {
+                    // make sure the theme impl is exists before saving
+                    try {
+                        getThemeImpl(req);
+                    } catch (IllegalArgumentException e) {
+                        return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
+                    }
+                }
+                // Read the new config form the request and store it.
+                Map configToStore = JSONReadWrite.fromRequest(req, Map.class);
+                JSONReadWrite.toUTF8File(configToStore, themeImplConfigFile);
+                return new JSONResponse(StatusResponse.OK());
+            } else {
+                return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
+            }
+        } catch (Exception e) {
+            return new JSONResponse(StatusResponse.ERROR(e));
+        }
+    }
+
+    private UIThemeImplementation getThemeImpl(StaplerRequest req) throws IllegalArgumentException {
+        ThemeImplNameRequestParamValues nameParams = new ThemeImplNameRequestParamValues(req);
+
+        UIThemeSet themeSet = getUiThemeSet();
+        UITheme theme = themeSet.getTheme(nameParams.themeName);
+        if (theme == null) {
+            throw new IllegalArgumentException(String.format("Unknown theme '%s'.", nameParams.themeName));
+        }
+        UIThemeImplementation impl = theme.getImpl(nameParams.themeImplName);
+        if (impl == null) {
+            throw new IllegalArgumentException(String.format("Unknown theme implementation '%s' on theme named '%s'.", nameParams.themeImplName, nameParams.themeName));
+        }
+
+        return impl;
     }
 
     private UIThemeSet getUiThemeSet() {
@@ -163,5 +230,21 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
 
     public String getDisplayName() {
         return null;
+    }
+
+    private class ThemeImplNameRequestParamValues {
+        private String themeName;
+        private String themeImplName;
+
+        private ThemeImplNameRequestParamValues(StaplerRequest req) throws IllegalArgumentException {
+            this.themeName = req.getParameter("theme-name");
+            if (this.themeName == null) {
+                throw new IllegalArgumentException("Request parameter 'theme-name' is required.");
+            }
+            this.themeImplName = req.getParameter("theme-impl-name");
+            if (this.themeImplName == null) {
+                throw new IllegalArgumentException("Request parameter 'theme-impl-name' is required.");
+            }
+        }
     }
 }

@@ -27,13 +27,9 @@ import hudson.model.User;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.uithemes.less.URLResource;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
-import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
-import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpecProperty;
-import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
-import org.jenkinsci.plugins.uithemes.util.JenkinsUtilTestSetup;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +56,7 @@ public class UIThemesProcessorTest {
 
     @Before
     public void before() throws NoSuchMethodException, IOException {
-        JenkinsUtilTestSetup.setup();
+        JenkinsUtil.JenkinsUtilTestSetup.setup();
         processor = new UIThemesProcessor();
         processor.deleteAllUserThemes();
         icon_default = new MockUIThemeContributor("icon", "default", EMPTY_RES);
@@ -210,7 +206,7 @@ public class UIThemesProcessorTest {
     private User createUser(String username) {
         User user = Mockito.mock(User.class);
         Mockito.when(user.getId()).thenReturn(username);
-        JenkinsUtilTestSetup.mkUserDir(user);
+        JenkinsUtil.JenkinsUtilTestSetup.mkUserDir(user);
         return user;
     }
 

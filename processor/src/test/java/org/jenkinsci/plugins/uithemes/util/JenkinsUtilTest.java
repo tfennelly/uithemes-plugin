@@ -38,7 +38,7 @@ public class JenkinsUtilTest {
 
     @Before
     public void before() throws NoSuchMethodException {
-        JenkinsUtilTestSetup.setup();
+        JenkinsUtil.JenkinsUtilTestSetup.setup();
     }
 
     @Test
