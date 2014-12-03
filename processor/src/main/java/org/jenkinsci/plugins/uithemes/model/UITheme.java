@@ -81,23 +81,23 @@ public class UITheme {
 
     public UITheme registerImpl(UIThemeImplementation impl) {
         if (implementations.put(impl.getName(), impl) != null) {
-            LOGGER.log(Level.WARNING, "Overwriting UI Theme named '{0}'.", impl.getName());
+            LOGGER.log(Level.WARNING, "Overwriting UI Theme named ''{0}''.", impl.getName());
         } else {
-            LOGGER.log(Level.FINE, "Added UI Theme named '{0}'.", impl.getName());
+            LOGGER.log(Level.FINE, "Added UI Theme named ''{0}''.", impl.getName());
         }
         return this;
     }
 
     public boolean contribute(UIThemeContribution contribution) {
         if (!contribution.getThemeName().equals(name)) {
-            LOGGER.log(Level.WARNING, "Unknown theme name '{0}'.", name);
+            LOGGER.log(Level.WARNING, "Unknown theme name ''{0}''.", name);
             return false;
         }
 
         UIThemeImplementation impl = getImpl(contribution.getThemeImplName());
 
         if (impl == null) {
-            LOGGER.log(Level.WARNING, "Unknown theme implementation name '{0}'. Cannot add contribution.", contribution.getThemeImplName());
+            LOGGER.log(Level.WARNING, "Unknown theme implementation name ''{0}''. Cannot add contribution.", contribution.getThemeImplName());
             return false;
         }
 

@@ -28,11 +28,15 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class StatusResponse {
+
+    private static final Logger LOGGER = Logger.getLogger(StatusResponse.class.getName());
 
     public String status = "OK";
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -89,6 +93,7 @@ public class StatusResponse {
     public static StatusResponse ERROR(String message, Throwable t) {
         StatusResponse statusResponse = ERROR(message);
         statusResponse.setException(t);
+        LOGGER.log(Level.INFO, message, t);
         return statusResponse;
     }
 

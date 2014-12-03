@@ -26,7 +26,6 @@ package org.jenkinsci.plugins.uithemes;
 import hudson.model.User;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.uithemes.less.LESSProcessor;
-import org.jenkinsci.plugins.uithemes.less.URLResource;
 import org.jenkinsci.plugins.uithemes.model.UITheme;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
@@ -34,6 +33,7 @@ import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
 import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
+import org.lesscss.Resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,8 +61,12 @@ public class UIThemesProcessor {
     }
 
     public synchronized UIThemesProcessor addContributor(UIThemeContributor contributor) {
-        contributors.add(contributor);
-        themeSet = null; // recreate
+        if (contributor != null) {
+            contributors.add(contributor);
+            themeSet = null; // recreate
+        } else {
+            LOGGER.log(Level.WARNING, "Attempted to add a 'null' contributor.", new UnsupportedOperationException());
+        }
         return this;
     }
 
@@ -158,21 +162,22 @@ public class UIThemesProcessor {
             }
             if (impl != null) {
                 for (UIThemeContribution themeContribution : impl.getContributions()) {
-                    URLResource lessResource = themeContribution.getLessResource();
+                    Resource lessResource = themeContribution.createUserLessResource(userHome);
+                    addContributionHeader(themeStylesBuilder, themeContribution);
                     if (lessResource != null) {
                         try {
-                            addContributionHeader(themeStylesBuilder, themeContribution);
                             themeStylesBuilder.append(lessProcessor.process(lessResource));
                         } catch (Exception e) {
                             LOGGER.log(Level.WARNING, String.format("Error processing LESS resource contribution '%s' from theme implementation '%s'.",
                                     lessResource.getName(), themeContribution.getQName()), e);
                         }
                     } else {
-                        LOGGER.log(Level.WARNING, "Theme implementation '{0}' returned a null LESS resource.", themeContribution.getQName());
+                        themeStylesBuilder.append("     /* No resource */");
+                        LOGGER.log(Level.WARNING, "Theme implementation ''{0}'' returned a null LESS resource.", themeContribution.getQName().toString());
                     }
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Unknown/Unimplemented theme named '{0}'.", themeName);
+                LOGGER.log(Level.WARNING, "Unknown/Unimplemented theme named ''{0}''.", themeName);
             }
         }
 
@@ -193,16 +198,20 @@ public class UIThemesProcessor {
         return new File(userHome, "themes");
     }
 
-    public static File getUserThemesCSSFile(File userHome) {
-        return new File(getUserThemesDir(userHome), "themes.css");
-    }
-
     public static File getUserThemeImplDir(String themeName, String themeImplName, File userHome) {
         return new File(getUserThemesDir(userHome), String.format("%s/%s", themeName, themeImplName));
     }
 
+    public static File getUserThemesCSSFile(File userHome) {
+        return new File(getUserThemesDir(userHome), "themes.css");
+    }
+
     public static File getUserThemeImplConfigFile(String themeName, String themeImplName, File userHome) {
         return new File(getUserThemeImplDir(themeName, themeImplName, userHome), "config.json");
+    }
+
+    public static File getUserThemeImplLESSFile(String themeName, String themeImplName, File userHome) {
+        return new File(getUserThemeImplDir(themeName, themeImplName, userHome), "theme.less");
     }
 
     public static Map<String, String> getUserThemeImplConfig(String themeName, String themeImplName, File userHome) throws IOException {

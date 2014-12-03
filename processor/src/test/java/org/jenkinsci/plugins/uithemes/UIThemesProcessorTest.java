@@ -43,8 +43,6 @@ import java.io.IOException;
  */
 public class UIThemesProcessorTest {
 
-    private static URLResource EMPTY_RES = new URLResource("/less/empty.less");
-
     private UIThemesProcessor processor;
     private MockUIThemeContributor icon_default;
     private MockUIThemeContributor icon_font_awesome;
@@ -59,13 +57,13 @@ public class UIThemesProcessorTest {
         JenkinsUtil.JenkinsUtilTestSetup.setup();
         processor = new UIThemesProcessor();
         processor.deleteAllUserThemes();
-        icon_default = new MockUIThemeContributor("icon", "default", EMPTY_RES);
-        icon_font_awesome = new MockUIThemeContributor("icon", "font-awesome", EMPTY_RES);
-        status_balls_default = new MockUIThemeContributor("status-balls", "default", EMPTY_RES);
-        status_balls_doony = new MockUIThemeContributor("status-balls", "doony-balls", EMPTY_RES);
-        status_balls_css3 = new MockUIThemeContributor("status-balls", "css3-animated", EMPTY_RES);
-        header_default = new MockUIThemeContributor("header", "default", EMPTY_RES);
-        header_lite = new MockUIThemeContributor("header", "lite", EMPTY_RES);
+        icon_default = new MockUIThemeContributor("icon", "default");
+        icon_font_awesome = new MockUIThemeContributor("icon", "font-awesome");
+        status_balls_default = new MockUIThemeContributor("status-balls", "default");
+        status_balls_doony = new MockUIThemeContributor("status-balls", "doony-balls");
+        status_balls_css3 = new MockUIThemeContributor("status-balls", "css3-animated");
+        header_default = new MockUIThemeContributor("header", "default");
+        header_lite = new MockUIThemeContributor("header", "lite");
     }
 
     @Test
@@ -213,8 +211,8 @@ public class UIThemesProcessorTest {
     private class MockUIThemeContributor implements UIThemeContributor {
         private UIThemeContribution contribution;
 
-        private MockUIThemeContributor(String themeName, String themeImplName, URLResource lessResource) {
-            this.contribution = new UIThemeContribution(themeName, themeImplName, lessResource);
+        private MockUIThemeContributor(String themeName, String themeImplName) {
+            this.contribution = new UIThemeContribution(themeName + "-" + themeImplName, themeName, themeImplName);
         }
         @Override
         public void contribute(UIThemeSet themeSet) {

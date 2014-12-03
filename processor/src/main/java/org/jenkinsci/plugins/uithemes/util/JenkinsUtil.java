@@ -74,7 +74,7 @@ public class JenkinsUtil {
             Object userIdStrategy = idStrategy.invoke(null);
 
             if (userIdStrategy == null) {
-                LOGGER.log(Level.FINE, "No IdStrategy. Cannot resolve the Jenkins user home dir name for user ID '{0}'.", user.getId());
+                LOGGER.log(Level.FINE, "No IdStrategy. Cannot resolve the Jenkins user home dir name for user ID ''{0}''.", user.getId());
                 return null;
             }
 

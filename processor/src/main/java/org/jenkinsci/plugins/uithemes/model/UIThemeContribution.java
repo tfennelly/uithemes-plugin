@@ -23,9 +23,26 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
-import org.jenkinsci.plugins.uithemes.less.URLResource;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import hudson.Util;
+import org.apache.commons.io.FileUtils;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.lesscss.FileResource;
+import org.lesscss.Resource;
 
 import javax.xml.namespace.QName;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * UI Theme Contribution.
@@ -43,16 +60,32 @@ import javax.xml.namespace.QName;
  */
 public class UIThemeContribution {
 
+    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessor.class.getName());
+
+    private final String contributionName;
     private String themeName;
     private String themeImplName;
-    private URLResource lessResource;
+    private Template lessTemplate;
 
     // TODO: Maybe support Javascript contributions?
 
-    public UIThemeContribution(String themeName, String themeImplName, URLResource lessResource) {
+    public UIThemeContribution(String contributionName, String themeName, String themeImplName) {
+        assert contributionName != null;
+        assert themeName != null;
+        assert themeImplName != null;
+
+        assertNameComponentOkay(contributionName);
+        assertNameComponentOkay(themeName);
+        assertNameComponentOkay(themeImplName);
+
+        this.contributionName = contributionName;
         this.themeName = themeName;
         this.themeImplName = themeImplName;
-        this.lessResource = lessResource;
+        this.lessTemplate = createLESSTemplate();
+    }
+
+    public String getContributionName() {
+        return contributionName;
     }
 
     public String getThemeName() {
@@ -63,16 +96,84 @@ public class UIThemeContribution {
         return themeImplName;
     }
 
-    public URLResource getLessResource() {
-        return lessResource;
+    public Resource createUserLessResource(File userHome) throws IOException {
+        if (lessTemplate == null) {
+            return null;
+        }
+
+        Map<String, String> userConfig = getUserThemeImplConfig(userHome);
+        File lessFile = UIThemesProcessor.getUserThemeImplLESSFile(themeName, themeImplName, userHome);
+        StringWriter writer = new StringWriter();
+
+        try {
+            lessTemplate.process(userConfig, writer);
+            FileUtils.write(lessFile, writer.toString(), "UTF-8");
+            return new FileResource(lessFile);
+        } catch (TemplateException e) {
+            throw new IOException(String.format("Error applying LESS resource template to User theme implementation. UserHome '%s', ThemeImpl '%s'.", userHome.getAbsolutePath(), getQName().toString()), e);
+        } finally {
+            writer.close();
+        }
     }
 
     public QName getQName() {
-        return new QName(themeName + ":" + themeImplName, lessResource.toString());
+        return new QName(themeName + ":" + themeImplName, contributionName);
     }
 
     @Override
     public String toString() {
-        return lessResource.toString();
+        return getQName().toString();
+    }
+
+    protected Map<String, String> getUserThemeImplConfig(File userHome) throws IOException {
+        return UIThemesProcessor.getUserThemeImplConfig(themeName, themeImplName, userHome);
+    }
+
+    private Template createLESSTemplate() {
+        String templateText = loadLESSTemplateText();
+
+        if (templateText != null) {
+            Reader templateReader = new StringReader(templateText);
+
+            try {
+                try {
+                    Configuration config = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+                    config.setNumberFormat("#.####");
+                    return new Template(getQName().toString(), templateReader, config);
+                } finally {
+                    templateReader.close();
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Exception creating FreeMarker Template instance for template:\n\n[" + templateText + "]\n\n", e);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    protected String loadLESSTemplateText() {
+        String templatePath = String.format("/jenkins-themes/%s/%s/%s/theme-template.less", themeName, themeImplName, contributionName);
+        InputStream templateResStream = getClass().getResourceAsStream(templatePath);
+
+        if (templateResStream != null) {
+            try {
+                Reader templateResStreamReader = new InputStreamReader(templateResStream, "UTF-8");
+                StringWriter writer = new StringWriter();
+                Util.copyStreamAndClose(templateResStreamReader, writer);
+                return writer.toString();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, String.format("Error reading LESS resource template file '%s'.", templatePath), e);
+            }
+
+        }
+
+        return null;
+    }
+
+    private void assertNameComponentOkay(String string) {
+        if (!Util.rawEncode(string).equals(string)) {
+            throw new IllegalArgumentException(String.format("'%s' cannot be used as UIThemeContribution name component as " +
+                    "it contains characters that cannot be used in a file path.", string));
+        }
     }
 }

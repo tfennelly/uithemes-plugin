@@ -79,7 +79,7 @@ public class UIThemeSet {
     public UIThemeImplementation registerThemeImpl(String themeName, String themeImplName, String themeImplDescription) {
         UITheme theme = getTheme(themeName);
         if (theme == null) {
-            LOGGER.log(Level.WARNING, "Theme '{0}' is not registered. Cannot register implementation '{1}'.", new String [] {themeName, themeImplName});
+            LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Cannot register implementation ''{1}''.", new String [] {themeName, themeImplName});
         }
         UIThemeImplementation impl = new UIThemeImplementation(themeName, themeImplName, themeImplDescription);
         theme.registerImpl(impl);
@@ -89,10 +89,10 @@ public class UIThemeSet {
     public boolean contribute(UIThemeContribution contribution) {
         UITheme theme = getTheme(contribution.getThemeName());
         if (theme != null) {
-            LOGGER.log(Level.FINE, "Theme '{0}' has received contribution to implementation '{1}'.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
+            LOGGER.log(Level.FINE, "Theme ''{0}'' has received contribution to implementation ''{1}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
             return theme.contribute(contribution);
         } else {
-            LOGGER.log(Level.WARNING, "Theme '{0}' is not registered. Cannot contribute to implementation '{1}'.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
+            LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Cannot contribute to implementation ''{1}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
             return false;
         }
     }

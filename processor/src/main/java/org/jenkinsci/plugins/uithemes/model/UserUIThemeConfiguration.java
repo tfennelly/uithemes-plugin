@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.uithemes.model;
 
 import hudson.model.User;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
 
@@ -37,7 +38,7 @@ import java.util.List;
  */
 public class UserUIThemeConfiguration {
 
-    public static final String FILE_THEME_SELECTIONS_CONFIG = "styles/user-theme-selections.json";
+    public static final String FILE_THEME_USER_CONFIG = "user-theme-config.json";
 
     public List<UserUIThemeSelection> userThemes = new ArrayList<UserUIThemeSelection>();
 
@@ -64,7 +65,7 @@ public class UserUIThemeConfiguration {
     }
 
     public static UserUIThemeConfiguration fromUserHome(File userHome) throws IOException {
-        return JSONReadWrite.fromUTF8File(new File(userHome, FILE_THEME_SELECTIONS_CONFIG), UserUIThemeConfiguration.class);
+        return JSONReadWrite.fromUTF8File(new File(UIThemesProcessor.getUserThemesDir(userHome), FILE_THEME_USER_CONFIG), UserUIThemeConfiguration.class);
     }
 
     public static UserUIThemeConfiguration fromUserHome(User user) throws IOException {
@@ -72,7 +73,7 @@ public class UserUIThemeConfiguration {
     }
 
     public static void toUserHome(File userHome, UserUIThemeConfiguration themeConfiguration) throws IOException {
-        JSONReadWrite.toUTF8File(themeConfiguration, new File(userHome, FILE_THEME_SELECTIONS_CONFIG));
+        JSONReadWrite.toUTF8File(themeConfiguration, new File(UIThemesProcessor.getUserThemesDir(userHome), FILE_THEME_USER_CONFIG));
     }
 
     public static void toUserHome(User user, UserUIThemeConfiguration themeConfiguration) throws IOException {

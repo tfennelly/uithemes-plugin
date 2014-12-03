@@ -35,7 +35,7 @@ public class UIThemeSetTest {
     @Test
     public void test() {
         UIThemeSet uiThemeSet = new UIThemeSet();
-        UIThemeContribution classicIcons = new UIThemeContribution("icon", "classic", new URLResource("./icons/classic-base.less"));
+        UIThemeContribution classicIcons = new UIThemeContribution("classic-base", "icon", "classic");
 
         // Should return false if the theme is not registered.
         Assert.assertFalse(uiThemeSet.contribute(classicIcons));
@@ -54,9 +54,9 @@ public class UIThemeSetTest {
         Assert.assertTrue(uiThemeSet.contribute(classicIcons));
 
         // make another contribution to the classic icons
-        Assert.assertTrue(uiThemeSet.contribute(new UIThemeContribution("icon", "classic", new URLResource("./icons/classic-some-other-styles.less"))));
+        Assert.assertTrue(uiThemeSet.contribute(new UIThemeContribution("classic-some-other-styles", "icon", "classic")));
 
-        Assert.assertEquals("[./icons/classic-base.less, ./icons/classic-some-other-styles.less]", uiThemeSet.getThemeImplContributions("icon", "classic").toString());
+        Assert.assertEquals("[{icon:classic}classic-base, {icon:classic}classic-some-other-styles]", uiThemeSet.getThemeImplContributions("icon", "classic").toString());
 
         // Add another implementation for the icons theme...
 
@@ -64,8 +64,8 @@ public class UIThemeSetTest {
         Assert.assertEquals("[classic, font-awesome]", uiThemeSet.getThemeImplNames("icon").toString());
         Assert.assertEquals("[]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
 
-        uiThemeSet.contribute(new UIThemeContribution("icon", "font-awesome", new URLResource("./icons/font-awesome.less")));
-        Assert.assertEquals("[./icons/font-awesome.less]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
+        uiThemeSet.contribute(new UIThemeContribution("font-awesome", "icon", "font-awesome"));
+        Assert.assertEquals("[{icon:font-awesome}font-awesome]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
 
         Assert.assertTrue(uiThemeSet.contribute(classicIcons));
     }
