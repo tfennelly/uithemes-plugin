@@ -76,16 +76,16 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 if (themeConfiguration == null) {
                     themeConfiguration = new UserUIThemeConfiguration();
                 }
-                return new JSONResponse(StatusResponse.OK(themeConfiguration));
+                return new JSONStaplerResponse(StatusResponse.OK(themeConfiguration));
             } else if (method.equals("PUT")) {
                 UserUIThemeConfiguration themeConfiguration = JSONReadWrite.fromRequest(req, UserUIThemeConfiguration.class);
                 UserUIThemeConfiguration.toUserHome(user, themeConfiguration);
-                return new JSONResponse(StatusResponse.OK());
+                return new JSONStaplerResponse(StatusResponse.OK());
             } else {
-                return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
+                return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
             }
         } catch (Exception e) {
-            return new JSONResponse(StatusResponse.ERROR(e));
+            return new JSONStaplerResponse(StatusResponse.ERROR(e));
         }
     }
 
@@ -101,12 +101,12 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
             if (method.equals("GET")) {
                 UIThemeSet themeSet = getUiThemeSet();
 
-                return new JSONResponse(StatusResponse.OK(UIThemeList.fromInternal(themeSet)));
+                return new JSONStaplerResponse(StatusResponse.OK(UIThemeList.fromInternal(themeSet)));
             } else {
-                return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
+                return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
             }
         } catch (Exception e) {
-            return new JSONResponse(StatusResponse.ERROR(e));
+            return new JSONStaplerResponse(StatusResponse.ERROR(e));
         }
     }
 
@@ -125,20 +125,20 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 try {
                     impl = getThemeImpl(req);
                 } catch (IllegalArgumentException e) {
-                    return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
+                    return new JSONStaplerResponse(StatusResponse.ERROR(e.getMessage()));
                 }
 
                 UIThemeImplSpec themeImplSpec = impl.getThemeImplSpec();
                 if (themeImplSpec == null) {
-                    return new JSONResponse(StatusResponse.ERROR(String.format("Theme implementation '%s:%s' does not specify an implementation spec i.e. it is not configurable.", impl.getName(), impl.getThemeName())));
+                    return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Theme implementation '%s:%s' does not specify an implementation spec i.e. it is not configurable.", impl.getName(), impl.getThemeName())));
                 }
 
-                return new JSONResponse(StatusResponse.OK(themeImplSpec));
+                return new JSONStaplerResponse(StatusResponse.OK(themeImplSpec));
             } else {
-                return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
+                return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
             }
         } catch (Exception e) {
-            return new JSONResponse(StatusResponse.ERROR(e));
+            return new JSONStaplerResponse(StatusResponse.ERROR(e));
         }
     }
 
@@ -156,16 +156,16 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
             try {
                 nameParams = new ThemeImplNameRequestParamValues(req);
             } catch (IllegalArgumentException e) {
-                return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
+                return new JSONStaplerResponse(StatusResponse.ERROR(e.getMessage()));
             }
 
             File themeImplConfigFile = UIThemesProcessor.getUserThemeImplConfigFile(nameParams.themeName, nameParams.themeImplName, userHome);
             if (method.equals("GET")) {
                 if (themeImplConfigFile.exists()) {
                     Map config = JSONReadWrite.fromUTF8File(themeImplConfigFile, Map.class);
-                    return new JSONResponse(StatusResponse.OK(config));
+                    return new JSONStaplerResponse(StatusResponse.OK(config));
                 } else {
-                    return new JSONResponse(StatusResponse.OK(Collections.emptyMap()));
+                    return new JSONStaplerResponse(StatusResponse.OK(Collections.emptyMap()));
                 }
             } else if (method.equals("PUT")) {
                 if (!themeImplConfigFile.exists()) {
@@ -173,18 +173,18 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                     try {
                         getThemeImpl(req);
                     } catch (IllegalArgumentException e) {
-                        return new JSONResponse(StatusResponse.ERROR(e.getMessage()));
+                        return new JSONStaplerResponse(StatusResponse.ERROR(e.getMessage()));
                     }
                 }
                 // Read the new config form the request and store it.
                 Map configToStore = JSONReadWrite.fromRequest(req, Map.class);
                 JSONReadWrite.toUTF8File(configToStore, themeImplConfigFile);
-                return new JSONResponse(StatusResponse.OK());
+                return new JSONStaplerResponse(StatusResponse.OK());
             } else {
-                return new JSONResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
+                return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
             }
         } catch (Exception e) {
-            return new JSONResponse(StatusResponse.ERROR(e));
+            return new JSONStaplerResponse(StatusResponse.ERROR(e));
         }
     }
 
