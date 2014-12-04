@@ -24,11 +24,11 @@
   ~ THE SOFTWARE.
   -->
 
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" >
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:uit="/org/jenkinsci/plugins/uithemes/ui">
     <l:layout norefresh="true">
         <st:include page="sidepanel.jelly"  it="${it.user}" />
         <l:main-panel>
-            Hi there.
+            <uit:controller name="ui-themes-config" />
         </l:main-panel>
     </l:layout>
 </j:jelly>
