@@ -37,7 +37,7 @@
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
-                <version>1.109</version>
+                <version>${version.hpi}</version>
                 <configuration>
                     <loggers>
                         <org.jenkinsci.plugins.uithemes>FINE</org.jenkinsci.plugins.uithemes>

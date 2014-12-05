@@ -7,7 +7,7 @@
 var templates = require('./templates');
 
 exports.render = function (modelData, onElement) {
+    console.log(modelData);
     var uiThemesConfig = templates.apply('ui-themes-config', modelData);
     onElement.empty().append(uiThemesConfig);
 }
-

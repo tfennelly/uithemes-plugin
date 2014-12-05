@@ -13,9 +13,14 @@
     <packaging>pom</packaging>
     <name>UIThemes: Parent POM</name>
 
+    <properties>
+        <version.hpi>1.109</version.hpi>
+    </properties>
+
     <modules>
         <module>processor</module>
         <module>plugin</module>
+        <module>test-plugin</module>
     </modules>
 
     <dependencies>

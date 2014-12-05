@@ -33,4 +33,8 @@ public class UIThemeImplSpec {
 
     public Map<String, UIThemeImplSpecProperty> properties = new LinkedHashMap<String, UIThemeImplSpecProperty>();
 
+    public UIThemeImplSpec addProperty(String name, UIThemeImplSpecProperty property) {
+        properties.put(name, property);
+        return this;
+    }
 }

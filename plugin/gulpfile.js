@@ -7,7 +7,6 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 var browserifyFactory = require('browserify');
 var hbsfy = require("hbsfy");
-var watchify = require('watchify');
 var source = require('vinyl-source-stream');
 var jasmine = require('gulp-jasmine-phantom');
 var junitReporter = require('./gulp/junit_reporter');
@@ -53,8 +52,7 @@ function buildUIThemes() {
 function watchSrc() {
     var browserify = createUIThemesBrowserify();
 
-    browserify = watchify(browserify);
-    browserify.on('update', function () {
+    gulp.watch('./src/main/**/*.js', function(event) {
         gutil.log('Changes detected in UIThemes source. Rerunning tests and repackaging UI resources.');
         // Run all tests on a src change
         bundleUIThemes(browserify, true);
@@ -104,7 +102,10 @@ function runTestSpecs(testsToRun, jasmineOptions) {
     function jasmineRun(runSrc) {
         return gulp.src(runSrc)
             .pipe(jasmine(jasmineOptions)
-            .on('error', function () {}));
+                .on('error', function () {
+                        gutil.log('Finish time: ' + new Date());
+                    })
+            );
     }
 
     // Setup the test env before running.

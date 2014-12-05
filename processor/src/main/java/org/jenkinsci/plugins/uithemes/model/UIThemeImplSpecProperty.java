@@ -41,4 +41,31 @@ public class UIThemeImplSpecProperty {
         NUMBER,
         COLOR
     }
+
+    public Type getType() {
+        return type;
+    }
+
+    public UIThemeImplSpecProperty setType(Type type) {
+        this.type = type;
+        return this;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public UIThemeImplSpecProperty setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+        return this;
+    }
+
+    public String[] getPermittedValues() {
+        return permittedValues;
+    }
+
+    public UIThemeImplSpecProperty setPermittedValues(String[] permittedValues) {
+        this.permittedValues = permittedValues;
+        return this;
+    }
 }
