@@ -49,12 +49,16 @@ public class UIThemeSet {
 
     private Map<String, UITheme> themes = new LinkedHashMap<String, UITheme>();
 
-    public UITheme registerTheme(String name, String description) {
+    public UITheme registerTheme(String name, String title) {
+        return registerTheme(name, title, title);
+    }
+
+    public UITheme registerTheme(String name, String title, String description) {
         UITheme theme = getTheme(name);
         if (theme != null) {
             return theme;
         }
-        theme = new UITheme(name, description);
+        theme = new UITheme(name, title, description);
         themes.put(name, theme);
         return theme;
     }
@@ -76,12 +80,16 @@ public class UIThemeSet {
         return themes.get(name);
     }
 
-    public UIThemeImplementation registerThemeImpl(String themeName, String themeImplName, String themeImplDescription) {
+    public UIThemeImplementation registerThemeImpl(String themeName, String themeImplName, String themeImplTitle) {
+        return registerThemeImpl(themeName, themeImplName, themeImplTitle, themeImplTitle);
+    }
+
+    public UIThemeImplementation registerThemeImpl(String themeName, String themeImplName, String themeImplTitle, String themeImplDescription) {
         UITheme theme = getTheme(themeName);
         if (theme == null) {
             LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Cannot register implementation ''{1}''.", new String [] {themeName, themeImplName});
         }
-        UIThemeImplementation impl = new UIThemeImplementation(themeName, themeImplName, themeImplDescription);
+        UIThemeImplementation impl = new UIThemeImplementation(themeName, themeImplName, themeImplTitle, themeImplDescription);
         theme.registerImpl(impl);
         return impl;
     }

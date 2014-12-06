@@ -39,19 +39,19 @@ public class PluginImpl extends Plugin implements UIThemeContributor {
         // What we do in this code here would normally be spread out across multiple contributors and Jenkins core itself.
 
         // Register a few themes.
-        themeSet.registerTheme("icon", "Icon");
-        themeSet.registerTheme("status-balls", "Status Balls/Orbs");
-        themeSet.registerTheme("header", "Page Header");
-        themeSet.registerTheme("console", "Console/Terminal");
+        themeSet.registerTheme("icon", "Icon", "The set of Icons used by Jenkins");
+        themeSet.registerTheme("status-balls", "Status Balls/Orbs", "The set of Status Balls/Orbs used by Jenkins");
+        themeSet.registerTheme("header", "Page Header", "The Jenkins page header styles");
+        themeSet.registerTheme("console", "Console", "The Console/Terminal styles");
 
         // register some theme implementations
-        themeSet.registerThemeImpl("icon",          "default", "Default Icons")
+        themeSet.registerThemeImpl("icon",          "default", "Default Icons", "Classic Jenkins Icon Set")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#FFF"))
                 );
-        themeSet.registerThemeImpl("icon",          "font-awesome", "FontAwesome Icons")
+        themeSet.registerThemeImpl("icon",          "font-awesome", "FontAwesome Icons", "<a href='http://fortawesome.github.io/Font-Awesome/'>Font Awesome</a> vector Icons")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))

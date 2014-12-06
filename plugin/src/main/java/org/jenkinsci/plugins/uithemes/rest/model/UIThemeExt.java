@@ -25,12 +25,9 @@ package org.jenkinsci.plugins.uithemes.rest.model;
 
 import org.jenkinsci.plugins.uithemes.model.UITheme;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
-import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -38,6 +35,7 @@ import java.util.Set;
 public class UIThemeExt {
 
     public String name;
+    public String title;
     public String description;
     public String defaultImpl;
     public List<Implementation> implementations = new ArrayList<Implementation>();
@@ -45,6 +43,7 @@ public class UIThemeExt {
     public static UIThemeExt fromInternal(UITheme uiTheme) {
         UIThemeExt uiThemeExt = new UIThemeExt();
         uiThemeExt.name = uiTheme.getName();
+        uiThemeExt.title = uiTheme.getTitle();
         uiThemeExt.description = uiTheme.getDescription();
         uiThemeExt.defaultImpl = uiTheme.getDefaultImpl().getName();
 

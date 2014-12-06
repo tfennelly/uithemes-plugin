@@ -62,15 +62,15 @@ public class UIThemesListThemesTest extends AbstractUIThemesTest {
         // should be 3 themes
         Assert.assertEquals(3, uiThemes.themes.size());
         Assert.assertEquals("icon", uiThemes.themes.get(0).name);
-        Assert.assertEquals("Icons", uiThemes.themes.get(0).description);
+        Assert.assertEquals("Icons", uiThemes.themes.get(0).title);
         Assert.assertEquals("default", uiThemes.themes.get(0).defaultImpl);
         Assert.assertEquals("[default, font-awesome]", uiThemes.themes.get(0).implementations.toString());
         Assert.assertEquals("status-balls", uiThemes.themes.get(1).name);
-        Assert.assertEquals("Status Balls", uiThemes.themes.get(1).description);
+        Assert.assertEquals("Status Balls", uiThemes.themes.get(1).title);
         Assert.assertEquals("default", uiThemes.themes.get(1).defaultImpl);
         Assert.assertEquals("[default, doony-balls, css3-animated]", uiThemes.themes.get(1).implementations.toString());
         Assert.assertEquals("header", uiThemes.themes.get(2).name);
-        Assert.assertEquals("Page Header", uiThemes.themes.get(2).description);
+        Assert.assertEquals("Page Header", uiThemes.themes.get(2).title);
         Assert.assertEquals("default", uiThemes.themes.get(2).defaultImpl);
         Assert.assertEquals("[default, lite]", uiThemes.themes.get(2).implementations.toString());
 

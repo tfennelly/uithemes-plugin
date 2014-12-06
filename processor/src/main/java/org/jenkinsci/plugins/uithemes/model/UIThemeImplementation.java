@@ -41,14 +41,16 @@ public class UIThemeImplementation {
 
     private String name;
     private String themeName;
+    private String title;
     private String description;
     private boolean isDefault = false;
     private UIThemeImplSpec themeImplSpec;
     private List<UIThemeContribution> contributions = new ArrayList<UIThemeContribution>();
 
-    public UIThemeImplementation(String themeName, String implName, String description) {
+    public UIThemeImplementation(String themeName, String implName, String title, String description) {
         this.name = implName;
         this.themeName = themeName;
+        this.title = title;
         this.description = description;
     }
 
@@ -62,6 +64,10 @@ public class UIThemeImplementation {
 
     public QName getQName() {
         return new QName(themeName, name);
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getDescription() {

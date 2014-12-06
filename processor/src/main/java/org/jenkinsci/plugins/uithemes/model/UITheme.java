@@ -43,16 +43,22 @@ public class UITheme {
     private static final Logger LOGGER = Logger.getLogger(UITheme.class.getName());
 
     private String name;
+    private String title;
     private String description;
     private Map<String, UIThemeImplementation> implementations = new LinkedHashMap<String, UIThemeImplementation>();
 
-    public UITheme(String name, String description) {
+    public UITheme(String name, String title, String description) {
         this.name = name;
+        this.title = title;
         this.description = description;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getDescription() {
