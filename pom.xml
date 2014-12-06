@@ -20,7 +20,6 @@
     <modules>
         <module>processor</module>
         <module>plugin</module>
-        <module>test-plugin</module>
     </modules>
 
     <dependencies>

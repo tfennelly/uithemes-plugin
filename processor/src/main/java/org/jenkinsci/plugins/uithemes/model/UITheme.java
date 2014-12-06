@@ -81,9 +81,9 @@ public class UITheme {
 
     public UITheme registerImpl(UIThemeImplementation impl) {
         if (implementations.put(impl.getName(), impl) != null) {
-            LOGGER.log(Level.WARNING, "Overwriting UI Theme named ''{0}''.", impl.getName());
+            LOGGER.log(Level.WARNING, "Overwriting UI Theme Implementation ''{0}''.", impl.getQName());
         } else {
-            LOGGER.log(Level.FINE, "Added UI Theme named ''{0}''.", impl.getName());
+            LOGGER.log(Level.FINE, "Added UI Theme Implementation ''{0}''.", impl.getQName());
         }
         return this;
     }

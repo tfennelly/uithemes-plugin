@@ -52,8 +52,8 @@ function buildUIThemes() {
 function watchSrc() {
     var browserify = createUIThemesBrowserify();
 
-    gulp.watch('./src/main/**/*.js', function(event) {
-        gutil.log('Changes detected in UIThemes source. Rerunning tests and repackaging UI resources.');
+    gulp.watch(['./src/main/**/*.js', './src/main/**/*.hbs'], function(event) {
+        gutil.log('Changes detected in UIThemes source. Rerunning tests and repackaging UI resources.\n\t' + event.path);
         // Run all tests on a src change
         bundleUIThemes(browserify, true);
         runTestSpecs(testSpecs);
@@ -64,7 +64,7 @@ function watchSrc() {
 
 function watchCSS() {
     gulp.watch('./src/main/**/*.less', function(event) {
-        gutil.log('Changes detected in UIThemes LESS source. Reassembling styles.');
+        gutil.log('Changes detected in UIThemes LESS source. Reassembling styles.\n\t' + event.path);
         bundleCSS();
     });
     gutil.log('Watching UIThemes LESS source changes.');

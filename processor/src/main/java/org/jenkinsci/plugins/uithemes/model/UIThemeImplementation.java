@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,10 @@ public class UIThemeImplementation {
 
     public String getThemeName() {
         return themeName;
+    }
+
+    public QName getQName() {
+        return new QName(themeName, name);
     }
 
     public String getDescription() {

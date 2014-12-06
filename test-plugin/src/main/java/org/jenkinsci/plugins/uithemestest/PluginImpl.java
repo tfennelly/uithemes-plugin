@@ -51,12 +51,26 @@ public class PluginImpl extends Plugin implements UIThemeContributor {
                                 .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#FFF"))
                 );
+        themeSet.registerThemeImpl("icon",          "font-awesome", "FontAwesome Icons")
+                .setThemeImplSpec(
+                        new UIThemeImplSpec()
+                                .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#FFF"))
+                );
+
         themeSet.registerThemeImpl("status-balls",  "default", "Default Status Balls/Orbs")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
                 );
+        themeSet.registerThemeImpl("status-balls",  "css3-animated", "CSS3 Animated Status Balls/Orbs")
+                .setThemeImplSpec(
+                        new UIThemeImplSpec()
+                                .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
+                );
+
         themeSet.registerThemeImpl("header",        "default", "Default Page header")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
