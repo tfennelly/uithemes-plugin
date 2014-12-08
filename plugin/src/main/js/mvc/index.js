@@ -111,9 +111,9 @@ MVCContext.prototype.requiredAttr = function(attributeName) {
 }
 
 MVCContext.prototype.onModelChange = function(callback) {
-    this.targetEl.on("cbwfModelChange", callback);
+    this.targetEl.on("jenkins:ModelChange", callback);
 }
 
 MVCContext.prototype.modelChange = function(modelData) {
-    this.targetEl.trigger({type: "cbwfModelChange", modelData: modelData});
+    this.targetEl.trigger({type: "jenkins:ModelChange", modelData: modelData});
 }

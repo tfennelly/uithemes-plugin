@@ -18,38 +18,42 @@ exports.getModelData = function (callback) {
                     var availableThemes = availableThemes.data.themes;
                     var mashedupDataModel = mashupUserThemeData(availableThemes, userThemeSelections);
 
-                    callback({
-                        themes: mashedupDataModel,
-                        updateImplSelection: function (themeName, newSelection) {
-                            var theme = getTheme(themeName, availableThemes);
-                            if (theme) {
-                                if (theme.implSelection === newSelection) {
+                    var updateImplSelectionFunc = function (themeName, newSelection) {
+                        var theme = getTheme(themeName, availableThemes);
+                        if (theme) {
+                            if (theme.implSelection === newSelection) {
+                                return;
+                            }
+
+                            var selection = getImplSelection(themeName, userThemeSelections);
+                            if (selection) {
+                                // this is the existing selection... not new... ignore
+                                if (selection.implName === newSelection) {
                                     return;
                                 }
-
-                                var selection = getImplSelection(themeName, userThemeSelections);
-                                if (selection) {
-                                    // this is the existing selection... not new... ignore
-                                    if (selection.implName === newSelection) {
-                                        return;
-                                    }
-                                    selection.implName = newSelection;
-                                } else {
-                                    userThemeSelections.push({
-                                        themeName: themeName,
-                                        implName: newSelection
-                                    });
-                                }
-                                theme.implSelection = newSelection;
-
-                                restApi.putUserThemesConfig(userUrl, {userThemes: userThemeSelections}, function() {
-                                    // Remash and fire model change event
-                                    mashedupDataModel = mashupUserThemeData(availableThemes, userThemeSelections);
-                                    mvcContext.modelChange(userThemeSelections);
-                                    console.log("model changed");
+                                selection.implName = newSelection;
+                            } else {
+                                userThemeSelections.push({
+                                    themeName: themeName,
+                                    implName: newSelection
                                 });
                             }
+                            theme.implSelection = newSelection;
+
+                            restApi.putUserThemesConfig(userUrl, {userThemes: userThemeSelections}, function () {
+                                // Remash and fire model change event
+                                mashedupDataModel = mashupUserThemeData(availableThemes, userThemeSelections);
+                                mvcContext.modelChange({
+                                    themes: mashedupDataModel,
+                                    updateImplSelection: updateImplSelectionFunc
+                                });
+                            });
                         }
+                    };
+
+                    callback({
+                        themes: mashedupDataModel,
+                        updateImplSelection: updateImplSelectionFunc
                     });
                 }
             });
