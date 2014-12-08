@@ -1,5 +1,3 @@
-<h4>{{{this.selection.description}}}</h4>
-
 {{#if this.isConfigurable}}
     <table>
         {{#each this.userConfig}}
@@ -12,7 +10,7 @@
                 {{#if this.permittedValues}}
 
                 {{else}}
-                    <input type="text" class="{{this.type}}" name="{{this.name}}" value="{{this.value}}" />
+                    <input type="text" class="form-control impl-config-value {{this.type}}" name="{{this.name}}" value="{{this.value}}" />
                 {{/if}}
             </td>
         </tr>
