@@ -1,14 +1,41 @@
 <h2>UI Themes Configuration</h2>
 
 <div class="tab-bar">
-    <div class="tab active" tab-id="1">Icons</div>
-    <div class="tab" tab-id="2">Header</div>
+    {{#each this.themes}}
+    <div class="tab active" tab-id="tab-{{@index}}">{{this.title}}</div>
+    {{/each}}
 </div>
 <div class="tab-content-frame pane-frame">
-    <div class="tab-content" tab-id="1">
-        Content 1
+    {{#each this.themes}}
+    <div class="tab-content" tab-id="tab-{{@index}}">
+        <h4 class="theme-desc">{{this.description}}</h4>
+        <table>
+            <tr>
+                <td class="impl-names">
+                    {{#each this.implementations}}
+                    <div class="impl-name">
+                        <input class="selection" type="radio" name="{{../name}}" value="{{this.name}}" {{#if this.isSelection}}checked="true"{{/if}}/>
+                        <div class="title">{{{this.title}}}</div>
+                        <div class="description">{{{this.description}}}</div>
+                    </div>
+                    {{/each}}
+                </td>
+                <td  class="impl-config">
+                    {{#each this.implementations}}
+                    <div>
+                        {{#ifCond this.name '===' ../implSelection}}
+                            <h4>{{{this.description}}}</h4>
+                            {{#if this.isConfigurable}}
+                                This theme implementation is configurable.
+                            {{else}}
+                                <span class="text-muted">This theme implementation is not configurable.</span>
+                            {{/if}}
+                        {{/ifCond}}
+                    </div>
+                    {{/each}}
+                </td>
+            </tr>
+        </table>
     </div>
-    <div class="tab-content" tab-id="2">
-        Content 2
-    </div>
+    {{/each}}
 </div>

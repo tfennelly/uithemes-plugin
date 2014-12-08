@@ -16,6 +16,10 @@ exports.getUserThemesConfig = function(userUrl, success) {
     ajax.execAsyncGET([userUrl, URL_BASE, "config"], success);
 }
 
+exports.putUserThemesConfig = function(userUrl, themesConfig, success) {
+    ajax.execAsyncPUT([userUrl, URL_BASE, "config"], themesConfig, success);
+}
+
 exports.getUserAvailableThemes = function(userUrl, success) {
     ajax.execAsyncGET([userUrl, URL_BASE, "themes"], success);
 }

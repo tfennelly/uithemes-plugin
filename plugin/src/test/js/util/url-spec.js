@@ -43,4 +43,9 @@ describe("util/url-spec", function () {
         // i.e. should not trim leading slashes on 1st and trailing slashes on last
         expect(url.concatPathTokens(['/a', 'b', 'c/'])).toBe('/a/b/c/');
     });
+
+    it("- test_toQueryString", function () {
+        expect(url.toQueryString({a: 'aval'})).toBe('a=aval');
+        expect(url.toQueryString({a: 'aval', b: 'bv al'})).toBe('a=aval&b=bv%20al');
+    });
 });

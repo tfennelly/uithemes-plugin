@@ -14,44 +14,61 @@ exports.getModelData = function (callback) {
         if (userThemesConfig.status === "OK") {
             restApi.getUserAvailableThemes(userUrl, function(availableThemes) {
                 if (availableThemes.status === "OK") {
-                    var model = mashupUserThemeData(availableThemes.data.themes, userThemesConfig.data.userThemes, function() {
-                        mvcContext.modelChange(model);
+                    var userThemeSelections = userThemesConfig.data.userThemes;
+                    var availableThemes = availableThemes.data.themes;
+                    var mashedupDataModel = mashupUserThemeData(availableThemes, userThemeSelections);
+
+                    callback({
+                        themes: mashedupDataModel,
+                        updateImplSelection: function (themeName, newSelection) {
+                            var theme = getTheme(themeName, availableThemes);
+                            if (theme) {
+                                if (theme.implSelection === newSelection) {
+                                    return;
+                                }
+
+                                var selection = getImplSelection(themeName, userThemeSelections);
+                                if (selection) {
+                                    // this is the existing selection... not new... ignore
+                                    if (selection.implName === newSelection) {
+                                        return;
+                                    }
+                                    selection.implName = newSelection;
+                                } else {
+                                    userThemeSelections.push({
+                                        themeName: themeName,
+                                        implName: newSelection
+                                    });
+                                }
+                                theme.implSelection = newSelection;
+
+                                restApi.putUserThemesConfig(userUrl, {userThemes: userThemeSelections}, function() {
+                                    // Remash and fire model change event
+                                    mashedupDataModel = mashupUserThemeData(availableThemes, userThemeSelections);
+                                    mvcContext.modelChange(userThemeSelections);
+                                    console.log("model changed");
+                                });
+                            }
+                        }
                     });
-                    callback(model);
                 }
             });
         }
     });
 }
 
-function mashupUserThemeData(availableThemes, selections, modelChange) {
-    function getImplSelection(theme) {
-        for (var i = 0; i < selections.length; i++) {
-            if (selections[i].themeName === theme.name) {
-                return selections[i];
-            }
-        }
-        return undefined;
-    }
-
+function mashupUserThemeData(availableThemes, selections) {
     function mashupTheme(theme) {
-        var selection = getImplSelection(theme);
+        var selection = getImplSelection(theme.name, selections);
         if (selection) {
             theme.implSelection = selection.implName;
         } else {
             theme.implSelection = theme.defaultImpl;
         }
-        theme.updateImplSelection = function(newSelection) {
-            theme.implSelection = newSelection;
-            getImplSelection(theme).implName = newSelection;
 
-            // TODO: save
-
-            modelChange();
+        for (var i = 0; i < theme.implementations.length; i++) {
+            theme.implementations[i].isSelection = (theme.implementations[i].name === theme.implSelection);
         }
-        theme.getImplConfig = function() {
-
-        };
     }
 
     for (var i = 0; i < availableThemes.length; i++) {
@@ -59,4 +76,21 @@ function mashupUserThemeData(availableThemes, selections, modelChange) {
     }
 
     return availableThemes;
+}
+
+function getTheme(themeName, themes) {
+    for (var i = 0; i < themes.length; i++) {
+        if (themes[i].name === themeName) {
+            return themes[i];
+        }
+    }
+}
+
+function getImplSelection(themeName, selections) {
+    for (var i = 0; i < selections.length; i++) {
+        if (selections[i].themeName === themeName) {
+            return selections[i];
+        }
+    }
+    return undefined;
 }

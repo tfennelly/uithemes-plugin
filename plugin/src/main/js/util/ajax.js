@@ -5,6 +5,7 @@
  */
 
 var url = require('./url');
+var json = require('./json');
 var jqProxy = require('../jQuery');
 
 exports.execAsyncGET = function (resPathTokens, success, params) {
@@ -15,6 +16,27 @@ exports.execAsyncGET = function (resPathTokens, success, params) {
         type: 'get',
         dataType: 'json',
         data: params,
+        success: success
+    });
+}
+
+exports.execAsyncPUT = function (resPathTokens, data, success, params) {
+    var $ = jqProxy.getJQuery();
+
+    var ajaxUrl = url.concatPathTokens(resPathTokens);
+    if (params) {
+        ajaxUrl += ('?' + url.toQueryString(params));
+    }
+
+    if (typeof data === 'object' || $.isArray(data)) {
+        data = json.myStringify(data);
+    }
+
+    $.ajax({
+        url: ajaxUrl,
+        type: 'put',
+        dataType: 'json',
+        data: data,
         success: success
     });
 }

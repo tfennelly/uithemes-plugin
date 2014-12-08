@@ -39,45 +39,35 @@ public class PluginImpl extends Plugin implements UIThemeContributor {
         // What we do in this code here would normally be spread out across multiple contributors and Jenkins core itself.
 
         // Register a few themes.
-        themeSet.registerTheme("icon", "Icon", "The set of Icons used by Jenkins");
+        themeSet.registerTheme("icon", "Icons", "The set of Icons used by Jenkins");
         themeSet.registerTheme("status-balls", "Status Balls/Orbs", "The set of Status Balls/Orbs used by Jenkins");
         themeSet.registerTheme("header", "Page Header", "The Jenkins page header styles");
         themeSet.registerTheme("console", "Console", "The Console/Terminal styles");
 
         // register some theme implementations
-        themeSet.registerThemeImpl("icon",          "default", "Default Icons", "Classic Jenkins Icon Set")
-                .setThemeImplSpec(
-                        new UIThemeImplSpec()
-                                .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#FFF"))
-                );
-        themeSet.registerThemeImpl("icon",          "font-awesome", "FontAwesome Icons", "<a href='http://fortawesome.github.io/Font-Awesome/'>Font Awesome</a> vector Icons")
-                .setThemeImplSpec(
-                        new UIThemeImplSpec()
-                                .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#FFF"))
-                );
+        themeSet.registerThemeImpl("icon",          "default", "Default", "Classic Jenkins Icon Set");
+        themeSet.registerThemeImpl("icon",          "font-awesome", "Font Awesome", "<a href='http://fortawesome.github.io/Font-Awesome/'>Font Awesome</a> vector Icons");
 
-        themeSet.registerThemeImpl("status-balls",  "default", "Default Status Balls/Orbs")
+        themeSet.registerThemeImpl("status-balls",  "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
                 );
-        themeSet.registerThemeImpl("status-balls",  "css3-animated", "CSS3 Animated Status Balls/Orbs")
+        themeSet.registerThemeImpl("status-balls",  "css3-animated", "CSS3 Animated")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
                 );
 
-        themeSet.registerThemeImpl("header",        "default", "Default Page header")
+        themeSet.registerThemeImpl("header",        "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#BBB"))
                                 .addProperty("logo", new UIThemeImplSpecProperty().setDefaultValue("images/butler.png"))
                 );
-        themeSet.registerThemeImpl("console",       "default", "Default Console/Terminal")
+        themeSet.registerThemeImpl("console",       "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#AAA"))

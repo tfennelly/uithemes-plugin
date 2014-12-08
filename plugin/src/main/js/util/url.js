@@ -22,6 +22,23 @@ exports.concatPathTokens = function (tokens) {
     }
 }
 
+exports.toQueryString = function (params) {
+    if (typeof params === 'string') {
+        return params;
+    } else {
+        var concatedString = '';
+        for (var param in params) {
+            if (params.hasOwnProperty(param)) {
+                if (concatedString !== '') {
+                    concatedString += '&';
+                }
+                concatedString += param + '=' + encodeURIComponent(params[param]);
+            }
+        }
+        return concatedString;
+    }
+}
+
 exports.trimLeadingSlashes = function (string) {
     return string.replace(/^\/+/g, '');
 }

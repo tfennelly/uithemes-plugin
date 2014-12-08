@@ -52,6 +52,8 @@ public class UIThemeExt {
             Implementation implExt = new Implementation();
 
             implExt.name = implName;
+            implExt.title = impl.getTitle();
+            implExt.description = impl.getDescription();
             implExt.isConfigurable = (impl.getThemeImplSpec() != null);
             uiThemeExt.implementations.add(implExt);
         }
@@ -61,6 +63,8 @@ public class UIThemeExt {
 
     public static class Implementation {
         public String name;
+        public String title;
+        public String description;
         public boolean isConfigurable = false;
 
         @Override
