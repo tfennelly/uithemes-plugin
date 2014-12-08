@@ -11,6 +11,7 @@ var jqProxy = require('../jQuery');
  */
 
 var controllers = {};
+var activeContexts = {};
 
 /**
  * Register a controller.
@@ -38,6 +39,7 @@ exports.isRegistered = function (controllerName) {
  * Apply controllers.
  */
 exports.applyControllers = function (onElement, allowReapply) {
+    var $ = jqProxy.getJQuery();
     var targetEls = jqProxy.getWidgets(onElement);
 
     jqProxy.forEachElement(targetEls, function(targetEl) {
@@ -52,13 +54,19 @@ exports.applyControllers = function (onElement, allowReapply) {
                     var view = controller.getView();
                     var mvcContext = new MVCContext(controllerName, targetEl);
 
-                    targetEl.addClass('uit-widget');
-                    targetEl.addClass('uit-controller-applied');
-                    targetEl.addClass(controllerName);
+                    activeContexts[mvcContext.getInstanceId()] = mvcContext;
+                    try {
+                        targetEl.addClass('uit-widget');
+                        targetEl.addClass('uit-controller-applied');
+                        targetEl.addClass(controllerName);
 
-                    model.getModelData.call(mvcContext, function (modelData) {
-                        view.render.call(mvcContext, modelData, targetEl);
-                    });
+                        model.getModelData.call(mvcContext, function (modelData) {
+                            mvcContext.modelData = modelData;
+                            view.render.call(mvcContext, modelData, targetEl);
+                        });
+                    } finally {
+                        mvcContext.setApplyCompleted();
+                    }
                 } else {
                     console.error("No controller named '" + controllerName + "'.");
                 }
@@ -83,14 +91,39 @@ function MVCContext(controllerName, targetEl) {
 
     this.targetEl = targetEl;
     this.controllerName = controllerName;
+    this.instanceId = targetEl.attr('instanceId');
+    if (!this.instanceId) {
+        this.instanceId = controllerName;
+    }
+    this.applyCompleted = false;
+}
+
+MVCContext.prototype.isApplyCompleted = function() {
+    return this.applyCompleted;
+}
+
+MVCContext.prototype.setApplyCompleted = function() {
+    this.applyCompleted = true;
+}
+
+MVCContext.prototype.getContext = function(instanceId) {
+    return activeContexts[instanceId];
 }
 
 MVCContext.prototype.getControllerName = function() {
     return this.controllerName;
 }
 
+MVCContext.prototype.getInstanceId = function() {
+    return this.instanceId;
+}
+
 MVCContext.prototype.getTargetElement = function() {
     return this.targetEl;
+}
+
+MVCContext.prototype.getModelData = function() {
+    return this.modelData;
 }
 
 MVCContext.prototype.attr = function(attributeName, defaultVal) {
@@ -115,5 +148,6 @@ MVCContext.prototype.onModelChange = function(callback) {
 }
 
 MVCContext.prototype.modelChange = function(modelData) {
-    this.targetEl.trigger({type: "jenkins:ModelChange", modelData: modelData});
+    this.modelData = modelData;
+    this.targetEl.triggerHandler({type: "jenkins:ModelChange", modelData: modelData});
 }

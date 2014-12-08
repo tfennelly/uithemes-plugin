@@ -26,14 +26,14 @@ exports.getUserAvailableThemes = function(userUrl, success) {
 
 exports.getThemeImplSpec = function(userUrl, success, themeName, themeImplName) {
     ajax.execAsyncGET([userUrl, URL_BASE, "implspec"], success, {
-        themeName: themeName,
-        themeImplName: themeImplName
+        'theme-name': themeName,
+        'theme-impl-name': themeImplName
     });
 }
 
 exports.getThemeImplConfig = function(userUrl, success, themeName, themeImplName) {
     ajax.execAsyncGET([userUrl, URL_BASE, "implconfig"], success, {
-        themeName: themeName,
-        themeImplName: themeImplName
+        'theme-name': themeName,
+        'theme-impl-name': themeImplName
     });
 }

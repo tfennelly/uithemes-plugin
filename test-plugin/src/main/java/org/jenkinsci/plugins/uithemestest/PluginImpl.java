@@ -51,20 +51,20 @@ public class PluginImpl extends Plugin implements UIThemeContributor {
         themeSet.registerThemeImpl("status-balls",  "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
-                                .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
+                                .addProperty("size", new UIThemeImplSpecProperty().setTitle("Size").setDescription("Size of the ball").setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
                 );
         themeSet.registerThemeImpl("status-balls",  "css3-animated", "CSS3 Animated")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
-                                .addProperty("size", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
+                                .addProperty("size", new UIThemeImplSpecProperty().setTitle("Size").setDescription("Size of the ball").setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
                 );
 
         themeSet.registerThemeImpl("header",        "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#BBB"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
                                 .addProperty("logo", new UIThemeImplSpecProperty().setDefaultValue("images/butler.png"))
                 );
         themeSet.registerThemeImpl("console",       "default", "Default")

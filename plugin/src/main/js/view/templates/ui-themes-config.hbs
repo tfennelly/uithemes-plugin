@@ -21,18 +21,7 @@
                     {{/each}}
                 </td>
                 <td  class="impl-config">
-                    {{#each this.implementations}}
-                    <div>
-                        {{#ifCond this.name '===' ../implSelection}}
-                            <h4>{{{this.description}}}</h4>
-                            {{#if this.isConfigurable}}
-                                This theme implementation is configurable.
-                            {{else}}
-                                <span class="text-muted">This theme implementation is not configurable.</span>
-                            {{/if}}
-                        {{/ifCond}}
-                    </div>
-                    {{/each}}
+                    <div uit-controller="ui-theme-impl-config" theme="{{this.name}}" />
                 </td>
             </tr>
         </table>

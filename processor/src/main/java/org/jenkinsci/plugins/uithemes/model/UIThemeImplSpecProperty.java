@@ -30,8 +30,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  */
 public class UIThemeImplSpecProperty {
 
+    public String title;
+    public String description;
     public Type type = Type.STRING;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String defaultValue;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String[] permittedValues;
@@ -40,6 +41,24 @@ public class UIThemeImplSpecProperty {
         STRING,
         NUMBER,
         COLOR
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public UIThemeImplSpecProperty setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public UIThemeImplSpecProperty setDescription(String description) {
+        this.description = description;
+        return this;
     }
 
     public Type getType() {

@@ -15,7 +15,8 @@ var jqProxy = require('../../jQuery');
 
 // Create the template cache..
 var templateCache = {
-    'ui-themes-config': require('./ui-themes-config.hbs')
+    'ui-themes-config': require('./ui-themes-config.hbs'),
+    'ui-theme-impl-config': require('./ui-theme-impl-config.hbs')
 };
 
 // Initialise handlebars with helpers

@@ -1,0 +1,23 @@
+<h4>{{{this.selection.description}}}</h4>
+
+{{#if this.isConfigurable}}
+    <table>
+        {{#each this.userConfig}}
+        <tr class="impl-config-property">
+            <td class="name">
+                <div class="title">{{this.title}}</div>
+                {{#if this.description}}<div class="description">{{this.description}}</div>{{/if}}
+            </td>
+            <td class="value">
+                {{#if this.permittedValues}}
+
+                {{else}}
+                    <input type="text" class="{{this.type}}" name="{{this.name}}" value="{{this.value}}" />
+                {{/if}}
+            </td>
+        </tr>
+        {{/each}}
+    </table>
+{{else}}
+    <span class="text-muted">This theme implementation is not configurable.</span>
+{{/if}}
