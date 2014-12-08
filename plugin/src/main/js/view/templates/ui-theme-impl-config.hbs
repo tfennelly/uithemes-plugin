@@ -8,7 +8,11 @@
             </td>
             <td class="value">
                 {{#if this.permittedValues}}
-
+                    <select class="form-control impl-config-value {{this.type}}" name="{{this.name}}">
+                        {{#each this.permittedValues}}
+                        <option value="{{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
                 {{else}}
                     <input type="text" class="form-control impl-config-value {{this.type}}" name="{{this.name}}" value="{{this.value}}" />
                 {{/if}}

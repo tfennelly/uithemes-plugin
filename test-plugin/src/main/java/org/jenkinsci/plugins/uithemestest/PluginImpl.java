@@ -65,6 +65,7 @@ public class PluginImpl extends Plugin implements UIThemeContributor {
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
+                                .addProperty("visible", new UIThemeImplSpecProperty().setTitle("Visible").setPermittedValues("visible", "hidden").setDefaultValue("visible"))
                                 .addProperty("logo", new UIThemeImplSpecProperty().setDefaultValue("images/butler.png"))
                 );
         themeSet.registerThemeImpl("console",       "default", "Default")

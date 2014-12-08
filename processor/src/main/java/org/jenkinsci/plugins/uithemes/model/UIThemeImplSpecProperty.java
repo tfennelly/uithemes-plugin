@@ -79,11 +79,11 @@ public class UIThemeImplSpecProperty {
         return this;
     }
 
-    public String[] getPermittedValues() {
+    public String[] zgetPermittedValues() {
         return permittedValues;
     }
 
-    public UIThemeImplSpecProperty setPermittedValues(String[] permittedValues) {
+    public UIThemeImplSpecProperty setPermittedValues(String... permittedValues) {
         this.permittedValues = permittedValues;
         return this;
     }
