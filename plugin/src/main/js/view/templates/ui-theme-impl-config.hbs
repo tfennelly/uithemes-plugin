@@ -10,7 +10,7 @@
                 {{#if this.permittedValues}}
                     <select class="form-control impl-config-value {{this.type}}" name="{{this.name}}">
                         {{#each this.permittedValues}}
-                        <option value="{{this}}">{{this}}</option>
+                        <option value="{{this}}" {{#ifCond this '===' ../value}}selected="true"{{/ifCond}}>{{this}}</option>
                         {{/each}}
                     </select>
                 {{else}}
@@ -20,6 +20,7 @@
         </tr>
         {{/each}}
     </table>
+    <span class="yui-button yui-push-button primary save"><button type="button">Save</button></span>
 {{else}}
     <span class="text-muted">This theme implementation is not configurable.</span>
 {{/if}}

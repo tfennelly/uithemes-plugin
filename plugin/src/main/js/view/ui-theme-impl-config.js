@@ -9,6 +9,18 @@ var jqProxy = require('../jQuery');
 
 exports.render = function (modelData, onElement) {
     var uiThemeImplConfig = templates.apply('ui-theme-impl-config', modelData);
-    //debugger;
     onElement.empty().append(uiThemeImplConfig);
+
+    var $ = jqProxy.getJQuery();
+    $('.save', uiThemeImplConfig).click(function() {
+        var userConfig = {};
+        $('.impl-config-value', uiThemeImplConfig).each(function() {
+            var input = $(this);
+            var name = input.attr('name');
+            var value = input.val();
+            userConfig[name] = value;
+        });
+        modelData.updateImplConfig(userConfig);
+    });
+
 }

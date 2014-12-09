@@ -37,3 +37,10 @@ exports.getThemeImplConfig = function(userUrl, success, themeName, themeImplName
         'theme-impl-name': themeImplName
     });
 }
+
+exports.putThemeImplConfig = function(userUrl, themeImplConfig, success, themeName, themeImplName) {
+    ajax.execAsyncPUT([userUrl, URL_BASE, "implconfig"], themeImplConfig, success, {
+        'theme-name': themeName,
+        'theme-impl-name': themeImplName
+    });
+}

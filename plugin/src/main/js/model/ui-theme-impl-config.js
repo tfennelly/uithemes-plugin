@@ -9,6 +9,7 @@ var jqProxy = require('../jQuery');
 
 exports.getModelData = function (callback) {
     var mvcContext = this;
+    var themeName = mvcContext.requiredAttr('theme');
     var themesConfigMVCContext = mvcContext.getContext('ui-themes-config');
 
     if (!themesConfigMVCContext) {
@@ -16,7 +17,8 @@ exports.getModelData = function (callback) {
         return;
     }
 
-    var themeName = mvcContext.requiredAttr('theme');
+    // Need to listen for the user changing theme implementation selections, using that event
+    // to trigger loading and display of the selected theme implementations
     themesConfigMVCContext.onModelChange(function(e) {
         mashupDataModel(themeName, e.modelData, function(mashedupModel) {
             mvcContext.modelChange(mashedupModel);
@@ -87,7 +89,10 @@ function mashupDataModel(themeName, themesConfig, callback) {
                             theme: theme,
                             selection: selection,
                             userConfig: userConfigSetArray,
-                            isConfigurable: true
+                            isConfigurable: true,
+                            updateImplConfig: function (newConfig) {
+                                restApi.putThemeImplConfig("../", newConfig, function() {}, theme.name, theme.implSelection);
+                            }
                         });
                     }
                 }, theme.name, theme.implSelection);
