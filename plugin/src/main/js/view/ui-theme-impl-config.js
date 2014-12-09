@@ -6,12 +6,18 @@
 
 var templates = require('./templates');
 var jqProxy = require('../jQuery');
+var colorPicker = require('./widgets/color-picker');
 
 exports.render = function (modelData, onElement) {
+    var $ = jqProxy.getJQuery();
     var uiThemeImplConfig = templates.apply('ui-theme-impl-config', modelData);
+
     onElement.empty().append(uiThemeImplConfig);
 
-    var $ = jqProxy.getJQuery();
+    // Add a color picker to all COLOR inputs.
+    colorPicker.addColorPicker($('input.COLOR', uiThemeImplConfig));
+
+    // Scrap all properties and save on pressing of the Save button.
     $('.save', uiThemeImplConfig).click(function() {
         var userConfig = {};
         $('.impl-config-value', uiThemeImplConfig).each(function() {
@@ -22,5 +28,4 @@ exports.render = function (modelData, onElement) {
         });
         modelData.updateImplConfig(userConfig);
     });
-
 }
