@@ -25,16 +25,52 @@ package org.jenkinsci.plugins.uithemes.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class UIThemeImplSpec {
 
+    private static final Logger LOGGER = Logger.getLogger(UIThemeImplSpec.class.getName());
+
     public Map<String, UIThemeImplSpecProperty> properties = new LinkedHashMap<String, UIThemeImplSpecProperty>();
 
     public UIThemeImplSpec addProperty(String name, UIThemeImplSpecProperty property) {
         properties.put(name, property);
         return this;
+    }
+
+    public Map<String, String> getDefaultConfig() {
+        Map<String, String> defaultConfig = new LinkedHashMap<String, String>();
+        Set<Map.Entry<String, UIThemeImplSpecProperty>> entries = properties.entrySet();
+
+        for (Map.Entry<String, UIThemeImplSpecProperty> entry : entries) {
+            UIThemeImplSpecProperty specProperty = entry.getValue();
+            String propertyName = entry.getKey();
+            String defaultValue = specProperty.defaultValue;
+
+            if (defaultValue == null) {
+                if (specProperty.permittedValues != null && specProperty.permittedValues.length > 0) {
+                    defaultValue = specProperty.permittedValues[0];
+                } else {
+                    if (specProperty.type == UIThemeImplSpecProperty.Type.NUMBER) {
+                        defaultValue = "0";
+                    } else if (specProperty.type == UIThemeImplSpecProperty.Type.COLOR) {
+                        defaultValue = "000000";
+                    } else {
+                        defaultValue = "";
+                    }
+                }
+
+                LOGGER.log(Level.WARNING, "UI Theme implementation property ''{0}'' is not configured with a default value. Defaulting to ''{1}''.", new String[] {propertyName, defaultValue});
+            }
+
+            defaultConfig.put(propertyName, defaultValue);
+        }
+
+        return defaultConfig;
     }
 }

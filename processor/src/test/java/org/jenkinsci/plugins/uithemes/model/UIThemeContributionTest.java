@@ -41,7 +41,7 @@ public class UIThemeContributionTest {
     @Test
     public void test() throws NoSuchMethodException, IOException {
         JenkinsUtil.JenkinsUtilTestSetup.setup();
-        UIThemeContribution themeContribution = new UIThemeContribution("contrib1", "themeA", "themeAImpl") {
+        UIThemeContribution themeContribution = new UIThemeContribution("contrib1", "themeA", "themeAImpl", UIThemeContributionTest.class) {
             @Override
             protected Map<String, String> getUserThemeImplConfig(File userHome) throws IOException {
                 Map<String, String> map = new HashMap<String, String>();
@@ -50,7 +50,7 @@ public class UIThemeContributionTest {
             }
         };
 
-        Resource lessResource = themeContribution.createUserLessResource(new File(JenkinsUtil.JENKINS_USER_HOME, "tfennelly"));
+        Resource lessResource = themeContribution.createUserLessResource(new File(JenkinsUtil.JENKINS_USER_HOME, "tfennelly"), null);
         Assert.assertTrue(lessResource.getName().endsWith("users/tfennelly/themes/themeA/themeAImpl/theme.less"));
         Assert.assertTrue(lessResource.exists());
 

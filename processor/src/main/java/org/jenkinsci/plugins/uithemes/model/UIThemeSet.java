@@ -23,7 +23,7 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
-import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * <p/>
  * See <a href="README.md">README.md</a>.
  * <p/>
- * A set of themes that "could" be applied for a user. The {@link UIThemesProcessor} uses this set to
+ * A set of themes that "could" be applied for a user. The {@link org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl} uses this set to
  * select the actual theme implementations to be applied, based on the users theme selection config.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -97,9 +97,10 @@ public class UIThemeSet {
     public boolean contribute(UIThemeContribution contribution) {
         UITheme theme = getTheme(contribution.getThemeName());
         if (theme != null) {
-            LOGGER.log(Level.FINE, "Theme ''{0}'' has received contribution to implementation ''{1}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
+            LOGGER.log(Level.FINE, "Theme ''{0}'' has received contribution to ''{1}'' implementation from ''{2}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName(), contribution.getContributor().getName()});
             return theme.contribute(contribution);
         } else {
+            // TODO: capture these contribute attempts and try add them later (in case the theme gets registered by a later contributor).
             LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Cannot contribute to implementation ''{1}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
             return false;
         }

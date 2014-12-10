@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.uithemestest;
 
 import hudson.Plugin;
 import org.jenkinsci.plugins.uithemes.UIThemeContributor;
+import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpecProperty;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
@@ -45,33 +46,41 @@ public class PluginImpl extends Plugin implements UIThemeContributor {
         themeSet.registerTheme("console", "Console", "The Console/Terminal styles");
 
         // register some theme implementations
-        themeSet.registerThemeImpl("icon",          "default", "Default", "Classic Jenkins Icon Set");
-        themeSet.registerThemeImpl("icon",          "font-awesome", "Font Awesome", "<a href='http://fortawesome.github.io/Font-Awesome/'>Font Awesome</a> vector Icons");
+        themeSet.registerThemeImpl("icon", "default", "Default", "Classic Jenkins Icon Set");
+        themeSet.registerThemeImpl("icon", "font-awesome", "Font Awesome", "<a href='http://fortawesome.github.io/Font-Awesome/'>Font Awesome</a> vector Icons");
 
-        themeSet.registerThemeImpl("status-balls",  "default", "Default")
+        themeSet.registerThemeImpl("status-balls", "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setTitle("Size").setDescription("Size of the ball").setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("CCC"))
                 );
         themeSet.registerThemeImpl("status-balls",  "css3-animated", "CSS3 Animated")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
                                 .addProperty("size", new UIThemeImplSpecProperty().setTitle("Size").setDescription("Size of the ball").setType(UIThemeImplSpecProperty.Type.NUMBER).setDefaultValue("24"))
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("CCC"))
                 );
 
-        themeSet.registerThemeImpl("header",        "default", "Default")
+        themeSet.registerThemeImpl("header", "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#CCC"))
-                                .addProperty("visible", new UIThemeImplSpecProperty().setTitle("Visible").setPermittedValues("visible", "hidden").setDefaultValue("visible"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setTitle("Background Color").setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("CCC"))
+                                .addProperty("visible", new UIThemeImplSpecProperty().setTitle("Logo Visible").setPermittedValues("visible", "hidden").setDefaultValue("visible"))
                                 .addProperty("logo", new UIThemeImplSpecProperty().setDefaultValue("images/butler.png"))
                 );
         themeSet.registerThemeImpl("console",       "default", "Default")
                 .setThemeImplSpec(
                         new UIThemeImplSpec()
-                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("#AAA"))
+                                .addProperty("bgColor", new UIThemeImplSpecProperty().setType(UIThemeImplSpecProperty.Type.COLOR).setDefaultValue("AAA"))
                 );
+
+        // Contribute to the theme implementations.
+        themeSet.contribute(new UIThemeContribution("default-icon-core", "icon", "default", PluginImpl.class)); // plugins might contribute more to this theme
+        themeSet.contribute(new UIThemeContribution("font-awesome-icon-core", "icon", "font-awesome", PluginImpl.class)); // plugins might contribute more to this theme
+        themeSet.contribute(new UIThemeContribution("default-status-balls-core", "status-balls", "default", PluginImpl.class));
+        themeSet.contribute(new UIThemeContribution("css3-status-balls-core", "status-balls", "css3-animated", PluginImpl.class));
+        themeSet.contribute(new UIThemeContribution("default-header-core", "header", "default", PluginImpl.class));
+        themeSet.contribute(new UIThemeContribution("default-console-core", "console", "default", PluginImpl.class));
     }
 }

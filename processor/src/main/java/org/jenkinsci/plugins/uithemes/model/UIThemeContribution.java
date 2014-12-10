@@ -28,7 +28,8 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import hudson.Util;
 import org.apache.commons.io.FileUtils;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
 import org.lesscss.FileResource;
 import org.lesscss.Resource;
 
@@ -60,19 +61,21 @@ import java.util.logging.Logger;
  */
 public class UIThemeContribution {
 
-    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessorImpl.class.getName());
 
     private final String contributionName;
+    private final Class<?> contributor;
     private String themeName;
     private String themeImplName;
     private Template lessTemplate;
 
     // TODO: Maybe support Javascript contributions?
 
-    public UIThemeContribution(String contributionName, String themeName, String themeImplName) {
+    public UIThemeContribution(String contributionName, String themeName, String themeImplName, Class<?> contributor) {
         assert contributionName != null;
         assert themeName != null;
         assert themeImplName != null;
+        assert contributor != null;
 
         assertNameComponentOkay(contributionName);
         assertNameComponentOkay(themeName);
@@ -81,11 +84,16 @@ public class UIThemeContribution {
         this.contributionName = contributionName;
         this.themeName = themeName;
         this.themeImplName = themeImplName;
+        this.contributor = contributor;
         this.lessTemplate = createLESSTemplate();
     }
 
     public String getContributionName() {
         return contributionName;
+    }
+
+    public Class<?> getContributor() {
+        return contributor;
     }
 
     public String getThemeName() {
@@ -96,13 +104,20 @@ public class UIThemeContribution {
         return themeImplName;
     }
 
-    public Resource createUserLessResource(File userHome) throws IOException {
+    public Resource createUserLessResource(File userHome, UIThemeImplementation implementation) throws IOException {
         if (lessTemplate == null) {
             return null;
         }
 
         Map<String, String> userConfig = getUserThemeImplConfig(userHome);
-        File lessFile = UIThemesProcessor.getUserThemeImplLESSFile(themeName, themeImplName, userHome);
+        if (userConfig.isEmpty() && implementation != null) {
+            UIThemeImplSpec themeImplSpec = implementation.getThemeImplSpec();
+            if (themeImplSpec != null) {
+                userConfig = themeImplSpec.getDefaultConfig();
+            }
+        }
+
+        File lessFile = UIThemesProcessorImpl.getUserThemeImplLESSFile(themeName, themeImplName, userHome);
         StringWriter writer = new StringWriter();
 
         try {
@@ -126,7 +141,7 @@ public class UIThemeContribution {
     }
 
     protected Map<String, String> getUserThemeImplConfig(File userHome) throws IOException {
-        return UIThemesProcessor.getUserThemeImplConfig(themeName, themeImplName, userHome);
+        return UIThemesProcessorImpl.getUserThemeImplConfig(themeName, themeImplName, userHome);
     }
 
     private Template createLESSTemplate() {
@@ -153,7 +168,7 @@ public class UIThemeContribution {
 
     protected String loadLESSTemplateText() {
         String templatePath = String.format("/jenkins-themes/%s/%s/%s/theme-template.less", themeName, themeImplName, contributionName);
-        InputStream templateResStream = getClass().getResourceAsStream(templatePath);
+        InputStream templateResStream = contributor.getResourceAsStream(templatePath);
 
         if (templateResStream != null) {
             try {
@@ -165,6 +180,8 @@ public class UIThemeContribution {
                 LOGGER.log(Level.WARNING, String.format("Error reading LESS resource template file '%s'.", templatePath), e);
             }
 
+        } else {
+            LOGGER.log(Level.INFO, "No UI Theme Contribution LESS template found at ''{0}'' on the classpath.", templatePath);
         }
 
         return null;

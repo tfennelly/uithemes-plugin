@@ -25,7 +25,6 @@ package org.jenkinsci.plugins.uithemes.rest;
 
 import org.jenkinsci.plugins.uithemes.UIThemeContributor;
 import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
-import org.jenkinsci.plugins.uithemes.less.URLResource;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpecProperty;
@@ -36,7 +35,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -75,13 +73,13 @@ public abstract class AbstractUIThemesTest {
 
     protected void addContributors() {
         UIThemesPlugin plugin = UIThemesPlugin.getInstance();
-        plugin.addThemeContributor(icon_default);
-        plugin.addThemeContributor(icon_font_awesome);
-        plugin.addThemeContributor(status_balls_default);
-        plugin.addThemeContributor(status_balls_doony);
-        plugin.addThemeContributor(status_balls_css3);
-        plugin.addThemeContributor(header_default);
-        plugin.addThemeContributor(header_lite);
+        plugin.addContributor(icon_default);
+        plugin.addContributor(icon_font_awesome);
+        plugin.addContributor(status_balls_default);
+        plugin.addContributor(status_balls_doony);
+        plugin.addContributor(status_balls_css3);
+        plugin.addContributor(header_default);
+        plugin.addContributor(header_lite);
     }
 
     public class MockUIThemeContributor implements UIThemeContributor {
@@ -89,7 +87,7 @@ public abstract class AbstractUIThemesTest {
         private UIThemeImplSpec themeImplSpec;
 
         private MockUIThemeContributor(String themeName, String themeImplName) {
-            this.contribution = new UIThemeContribution(themeName + "-" + themeImplName, themeName, themeImplName);
+            this.contribution = new UIThemeContribution(themeName + "-" + themeImplName, themeName, themeImplName, MockUIThemeContributor.class);
         }
         private UIThemesListThemesTest.MockUIThemeContributor setThemeImplSpec(UIThemeImplSpec themeImplSpec) {
             this.themeImplSpec = themeImplSpec;

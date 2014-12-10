@@ -26,8 +26,11 @@ package org.jenkinsci.plugins.uithemes;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import hudson.model.User;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPlugin extends Plugin {
+public class UIThemesPlugin extends Plugin implements UIThemesProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(UIThemesPlugin.class.getName());
 
@@ -45,11 +48,11 @@ public class UIThemesPlugin extends Plugin {
     @Override
     public void postInitialize() throws Exception {
         themesProcessor = newProcessor();
-        addThemeContributors();
+        addPluginContributors();
     }
 
     protected UIThemesProcessor newProcessor() {
-        return new UIThemesProcessor();
+        return new UIThemesProcessorImpl();
     }
 
     public UIThemesProcessor getThemesProcessor() {
@@ -60,25 +63,42 @@ public class UIThemesPlugin extends Plugin {
         return getWrapper().parent;
     }
 
-    private void addThemeContributors() throws IOException {
+    private void addPluginContributors() throws IOException {
         List<PluginWrapper> plugins = getPluginManager().getPlugins();
 
         for (PluginWrapper pluginWrapper : plugins) {
             Plugin plugin = pluginWrapper.getPlugin();
             if (plugin instanceof UIThemeContributor) {
-                addThemeContributor((UIThemeContributor) plugin);
+                addContributor((UIThemeContributor) plugin);
             }
         }
 
         themesProcessor.deleteAllUserThemes();
     }
 
-    public void addThemeContributor(UIThemeContributor themeContributor) {
-        themesProcessor.addContributor(themeContributor);
+    @Override
+    public UIThemesProcessor addContributor(UIThemeContributor themeContributor) {
+        return themesProcessor.addContributor(themeContributor);
     }
 
-    public void removeThemeContributor(UIThemeContributor themeContributor) {
-        themesProcessor.removeContributor(themeContributor);
+    @Override
+    public UIThemesProcessor removeContributor(UIThemeContributor themeContributor) {
+        return themesProcessor.removeContributor(themeContributor);
+    }
+
+    @Override
+    public File getUserThemesCSS(User user) throws IOException {
+        return themesProcessor.getUserThemesCSS(user);
+    }
+
+    @Override
+    public void deleteAllUserThemes() throws IOException {
+        themesProcessor.deleteAllUserThemes();
+    }
+
+    @Override
+    public UIThemeSet getUiThemeSet() {
+        return themesProcessor.getUiThemeSet();
     }
 
     public static UIThemesPlugin getInstance() {

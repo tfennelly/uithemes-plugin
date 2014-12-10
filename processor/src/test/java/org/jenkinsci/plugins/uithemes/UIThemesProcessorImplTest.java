@@ -25,7 +25,6 @@ package org.jenkinsci.plugins.uithemes;
 
 import hudson.model.User;
 import org.apache.commons.io.FileUtils;
-import org.jenkinsci.plugins.uithemes.less.URLResource;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
@@ -41,9 +40,9 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesProcessorTest {
+public class UIThemesProcessorImplTest {
 
-    private UIThemesProcessor processor;
+    private UIThemesProcessorImpl processor;
     private MockUIThemeContributor icon_default;
     private MockUIThemeContributor icon_font_awesome;
     private MockUIThemeContributor status_balls_default;
@@ -55,7 +54,7 @@ public class UIThemesProcessorTest {
     @Before
     public void before() throws NoSuchMethodException, IOException {
         JenkinsUtil.JenkinsUtilTestSetup.setup();
-        processor = new UIThemesProcessor();
+        processor = new UIThemesProcessorImpl();
         processor.deleteAllUserThemes();
         icon_default = new MockUIThemeContributor("icon", "default");
         icon_font_awesome = new MockUIThemeContributor("icon", "font-awesome");
@@ -198,7 +197,7 @@ public class UIThemesProcessorTest {
     }
 
     private File getUserThemesFile(User user) {
-        return UIThemesProcessor.getUserThemesCSSFile(JenkinsUtil.getJenkinsUserHome(user));
+        return UIThemesProcessorImpl.getUserThemesCSSFile(JenkinsUtil.getJenkinsUserHome(user));
     }
 
     private User createUser(String username) {
@@ -212,7 +211,7 @@ public class UIThemesProcessorTest {
         private UIThemeContribution contribution;
 
         private MockUIThemeContributor(String themeName, String themeImplName) {
-            this.contribution = new UIThemeContribution(themeName + "-" + themeImplName, themeName, themeImplName);
+            this.contribution = new UIThemeContribution(themeName + "-" + themeImplName, themeName, themeImplName, MockUIThemeContributor.class);
         }
         @Override
         public void contribute(UIThemeSet themeSet) {

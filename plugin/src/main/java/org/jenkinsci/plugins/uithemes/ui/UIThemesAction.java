@@ -27,7 +27,13 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
+import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
+import org.jenkinsci.plugins.uithemes.rest.CSSStaplerResponse;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -38,6 +44,7 @@ import java.util.Collections;
 public class UIThemesAction extends TransientUserActionFactory implements Action {
 
     private User user;
+    private UIThemesPlugin pluginInstance;
 
     @Override
     public Collection<? extends Action> createFor(User target) {
@@ -62,5 +69,17 @@ public class UIThemesAction extends TransientUserActionFactory implements Action
     @Override
     public String getUrlName() {
         return "uithemes";
+    }
+
+    public final HttpResponse doCss(StaplerRequest req) throws IOException {
+        File cssFile = getPlugin().getThemesProcessor().getUserThemesCSS(user);
+        return new CSSStaplerResponse(cssFile);
+    }
+
+    private UIThemesPlugin getPlugin() {
+        if (pluginInstance == null) {
+            pluginInstance = UIThemesPlugin.getInstance();
+        }
+        return pluginInstance;
     }
 }

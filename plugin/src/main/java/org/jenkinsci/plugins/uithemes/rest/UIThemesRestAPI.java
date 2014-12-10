@@ -29,6 +29,7 @@ import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
 import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
 import org.jenkinsci.plugins.uithemes.model.UITheme;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
@@ -80,6 +81,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
             } else if (method.equals("PUT")) {
                 UserUIThemeConfiguration themeConfiguration = JSONReadWrite.fromRequest(req, UserUIThemeConfiguration.class);
                 UserUIThemeConfiguration.toUserHome(user, themeConfiguration);
+                deleteUserThemeCSS(); // regenerate
                 return new JSONStaplerResponse(StatusResponse.OK());
             } else {
                 return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
@@ -159,7 +161,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 return new JSONStaplerResponse(StatusResponse.ERROR(e.getMessage()));
             }
 
-            File themeImplConfigFile = UIThemesProcessor.getUserThemeImplConfigFile(nameParams.themeName, nameParams.themeImplName, userHome);
+            File themeImplConfigFile = UIThemesProcessorImpl.getUserThemeImplConfigFile(nameParams.themeName, nameParams.themeImplName, userHome);
             if (method.equals("GET")) {
                 if (themeImplConfigFile.exists()) {
                     Map config = JSONReadWrite.fromUTF8File(themeImplConfigFile, Map.class);
@@ -179,6 +181,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 // Read the new config form the request and store it.
                 Map configToStore = JSONReadWrite.fromRequest(req, Map.class);
                 JSONReadWrite.toUTF8File(configToStore, themeImplConfigFile);
+                deleteUserThemeCSS(); // regenerate
                 return new JSONStaplerResponse(StatusResponse.OK());
             } else {
                 return new JSONStaplerResponse(StatusResponse.ERROR(String.format("Unsupported '%s' operation.", method)));
@@ -186,6 +189,10 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
         } catch (Exception e) {
             return new JSONStaplerResponse(StatusResponse.ERROR(e));
         }
+    }
+
+    private void deleteUserThemeCSS() {
+        UIThemesProcessorImpl.getUserThemesCSSFile(userHome).delete();
     }
 
     private UIThemeImplementation getThemeImpl(StaplerRequest req) throws IllegalArgumentException {

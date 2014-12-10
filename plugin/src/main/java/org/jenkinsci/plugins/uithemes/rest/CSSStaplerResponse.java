@@ -21,18 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes.jelly;
+package org.jenkinsci.plugins.uithemes.rest;
 
-import hudson.Extension;
-import hudson.model.PageDecorator;
-import hudson.model.User;
+import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-@Extension
-public class UIThemesPageDecorator extends PageDecorator {
-    public User getUser() {
-        return User.current();
+public class CSSStaplerResponse implements HttpResponse {
+
+    private final File cssFile;
+
+    public CSSStaplerResponse(File cssFile) {
+        this.cssFile = cssFile;
+    }
+
+    public void generateResponse(StaplerRequest staplerRequest, StaplerResponse staplerResponse, Object node) throws IOException, ServletException {
+        byte[] cssBytes = FileUtils.readFileToByteArray(cssFile);
+        staplerResponse.setContentType("text/css; charset=UTF-8");
+        staplerResponse.getOutputStream().write(cssBytes);
     }
 }
