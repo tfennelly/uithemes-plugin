@@ -125,7 +125,24 @@ public class UIThemeContribution {
             FileUtils.write(lessFile, writer.toString(), "UTF-8");
             return new FileResource(lessFile);
         } catch (TemplateException e) {
-            throw new IOException(String.format("Error applying LESS resource template to User theme implementation. UserHome '%s', ThemeImpl '%s'.", userHome.getAbsolutePath(), getQName().toString()), e);
+            throw new IOException(
+                    String.format("Error applying user theme impl configuration to LESS resource template. UserHome '%s', ThemeImpl '%s'.\n" +
+                                  "   > There seems to be an issue/mismatch between the variables used in the template and those provided in the theme implementation configuration.\n" +
+                                  "   > Check for mismatches/omissions between the template variables and the theme configuration variables:\n" +
+                                  "       > Template Contributor: %s\n" +
+                                  "       > Template: %s\n" +
+                                  "       > Template Error Expression: ${%s} (Line %d, Column %d)\n" +
+                                  "       > Theme Implementation Config: %s\n",
+                            userHome.getAbsolutePath(),
+                            getQName().toString(),
+                            contributor.getName(),
+                            getTemplatePath(),
+                            e.getBlamedExpressionString(),
+                            e.getLineNumber(),
+                            e.getColumnNumber(),
+                            (userConfig.isEmpty() ? "{} !!EMPTY!!" : userConfig.toString())
+                    ),
+                    e);
         } finally {
             writer.close();
         }
@@ -167,7 +184,7 @@ public class UIThemeContribution {
     }
 
     protected String loadLESSTemplateText() {
-        String templatePath = String.format("/jenkins-themes/%s/%s/%s/theme-template.less", themeName, themeImplName, contributionName);
+        String templatePath = getTemplatePath();
         InputStream templateResStream = contributor.getResourceAsStream(templatePath);
 
         if (templateResStream != null) {
@@ -185,6 +202,10 @@ public class UIThemeContribution {
         }
 
         return null;
+    }
+
+    private String getTemplatePath() {
+        return String.format("/jenkins-themes/%s/%s/%s/theme-template.less", themeName, themeImplName, contributionName);
     }
 
     private void assertNameComponentOkay(String string) {

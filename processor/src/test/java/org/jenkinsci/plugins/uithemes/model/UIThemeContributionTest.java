@@ -39,7 +39,7 @@ import java.util.Map;
 public class UIThemeContributionTest {
 
     @Test
-    public void test() throws NoSuchMethodException, IOException {
+    public void test_no_model_errors() throws NoSuchMethodException, IOException {
         JenkinsUtil.JenkinsUtilTestSetup.setup();
         UIThemeContribution themeContribution = new UIThemeContribution("contrib1", "themeA", "themeAImpl", UIThemeContributionTest.class) {
             @Override
@@ -53,7 +53,30 @@ public class UIThemeContributionTest {
         Resource lessResource = themeContribution.createUserLessResource(new File(JenkinsUtil.JENKINS_USER_HOME, "tfennelly"), null);
         Assert.assertTrue(lessResource.getName().endsWith("users/tfennelly/themes/themeA/themeAImpl/theme.less"));
         Assert.assertTrue(lessResource.exists());
+    }
 
-        System.out.println();
+    @Test
+    public void test_with_model_errors() throws NoSuchMethodException, IOException {
+        JenkinsUtil.JenkinsUtilTestSetup.setup();
+        UIThemeContribution themeContribution = new UIThemeContribution("contrib1", "themeA", "themeAImpl", UIThemeContributionTest.class) {
+            @Override
+            protected Map<String, String> getUserThemeImplConfig(File userHome) throws IOException {
+                Map<String, String> map = new HashMap<String, String>();
+                // don't add a 'backgroudColor' property, forcing a template failure
+                return map;
+            }
+        };
+
+        try {
+            themeContribution.createUserLessResource(new File(JenkinsUtil.JENKINS_USER_HOME, "tfennelly"), null);
+            Assert.fail("Expected IOException");
+        } catch(IOException e) {
+            String message = e.getMessage();
+            //System.out.println(message);
+            Assert.assertTrue(message.contains("> Template Contributor: org.jenkinsci.plugins.uithemes.model.UIThemeContributionTest"));
+            Assert.assertTrue(message.contains("> Template: /jenkins-themes/themeA/themeAImpl/contrib1/theme-template.less"));
+            Assert.assertTrue(message.contains("> Template Error Expression: ${backgroudColor} (Line 2, Column 20)"));
+            Assert.assertTrue(message.contains("> Theme Implementation Config: {} !!EMPTY!!"));
+        }
     }
 }

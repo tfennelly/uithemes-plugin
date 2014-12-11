@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -38,18 +39,10 @@ import java.util.Arrays;
 public class UIThemeImplSpecTest {
 
     @Test
-    public void test() throws IOException {
-        UIThemeImplSpec specIn = new UIThemeImplSpec();
+    public void test_serialize() throws IOException {
+        UIThemeImplSpec implSpec = createThemeImplSpec();
 
-        UIThemeImplSpecProperty backgroundColor = new UIThemeImplSpecProperty();
-        backgroundColor.type = UIThemeImplSpecProperty.Type.COLOR;
-        specIn.properties.put("backgroundColor", backgroundColor);
-
-        UIThemeImplSpecProperty visibility = new UIThemeImplSpecProperty();
-        visibility.permittedValues = new String[] {"visible", "hidden"};
-        specIn.properties.put("visibility", visibility);
-
-        String serlialized = JSONReadWrite.toString(specIn);
+        String serlialized = JSONReadWrite.toString(implSpec);
         // System.out.println(serlialized);
 
         UIThemeImplSpec specOut = JSONReadWrite.fromString(serlialized, UIThemeImplSpec.class);
@@ -58,5 +51,33 @@ public class UIThemeImplSpecTest {
         Assert.assertEquals(UIThemeImplSpecProperty.Type.COLOR, specOut.properties.get("backgroundColor").type);
         Assert.assertEquals(UIThemeImplSpecProperty.Type.STRING, specOut.properties.get("visibility").type);
         Assert.assertEquals("[visible, hidden]", Arrays.asList(specOut.properties.get("visibility").permittedValues).toString());
+    }
+
+    @Test
+    public void test_getDefaultConfig() throws IOException {
+        UIThemeImplSpec implSpec = createThemeImplSpec();
+        Map<String, String> defaultConfig;
+
+        // Test with no defaults configured i.e. it will default the defaults :)
+        defaultConfig = implSpec.getDefaultConfig();
+        Assert.assertEquals("{backgroundColor=000000, visibility=visible}", defaultConfig.toString());
+
+        // Set a default on the backgroundColor and test again
+        implSpec.getProperty("backgroundColor").setDefaultValue("FFFFFF");
+        defaultConfig = implSpec.getDefaultConfig();
+        Assert.assertEquals("{backgroundColor=FFFFFF, visibility=visible}", defaultConfig.toString());
+    }
+
+    private UIThemeImplSpec createThemeImplSpec() {
+        UIThemeImplSpec specIn = new UIThemeImplSpec();
+
+        UIThemeImplSpecProperty backgroundColor = new UIThemeImplSpecProperty();
+        backgroundColor.type = UIThemeImplSpecProperty.Type.COLOR;
+        specIn.addProperty("backgroundColor", backgroundColor);
+
+        UIThemeImplSpecProperty visibility = new UIThemeImplSpecProperty();
+        visibility.permittedValues = new String[] {"visible", "hidden"};
+        specIn.addProperty("visibility", visibility);
+        return specIn;
     }
 }

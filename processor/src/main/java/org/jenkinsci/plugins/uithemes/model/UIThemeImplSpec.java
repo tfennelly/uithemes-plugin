@@ -43,6 +43,10 @@ public class UIThemeImplSpec {
         return this;
     }
 
+    public UIThemeImplSpecProperty getProperty(String name) {
+        return properties.get(name);
+    }
+
     public Map<String, String> getDefaultConfig() {
         Map<String, String> defaultConfig = new LinkedHashMap<String, String>();
         Set<Map.Entry<String, UIThemeImplSpecProperty>> entries = properties.entrySet();
