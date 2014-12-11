@@ -26,13 +26,20 @@ package org.jenkinsci.plugins.uithemes.jelly;
 import hudson.Extension;
 import hudson.model.PageDecorator;
 import hudson.model.User;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.acegisecurity.Authentication;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @Extension
 public class UIThemesPageDecorator extends PageDecorator {
-    public User getUser() {
-        return User.current();
+
+    public boolean getThemesSupported() {
+        // Need to make sure the user at least has READ permissions, otherwise the test harness
+        // in Jenkins core starts throwing ACL errors. If READ permissions are not available,
+        // then don't try supporting UI Themes. Should only effect the test harness !!
+        return Jenkins.getInstance().getACL().hasPermission(Permission.READ);
     }
 }

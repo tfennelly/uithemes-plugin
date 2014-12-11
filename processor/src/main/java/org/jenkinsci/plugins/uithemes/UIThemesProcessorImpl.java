@@ -23,8 +23,13 @@
  */
 package org.jenkinsci.plugins.uithemes;
 
+import hudson.Extension;
+import hudson.model.Action;
+import hudson.model.RootAction;
 import hudson.model.User;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.jenkinsci.plugins.uithemes.jelly.CSSStaplerResponse;
 import org.jenkinsci.plugins.uithemes.less.LESSProcessor;
 import org.jenkinsci.plugins.uithemes.model.UITheme;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
@@ -33,6 +38,8 @@ import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
 import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
 import org.lesscss.Resource;
 
 import java.io.File;
@@ -48,13 +55,33 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesProcessorImpl implements UIThemesProcessor {
+@Extension
+public class UIThemesProcessorImpl implements UIThemesProcessor, RootAction {
 
-    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessorImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessor.class.getName());
 
-    private final LESSProcessor lessProcessor = new LESSProcessor();
+    private LESSProcessor lessProcessor;
     private final List<UIThemeContributor> contributors = new ArrayList<UIThemeContributor>();
     private volatile UIThemeSet themeSet;
+
+    public UIThemesProcessorImpl() {
+        try {
+            lessProcessor = new LESSProcessor();
+        } catch (NoClassDefFoundError e) {
+            LOGGER.log(Level.SEVERE, "UI Themes not supported because LESS processing is not available.");
+        }
+    }
+
+    public static UIThemesProcessor getInstance() {
+        for (Action action : Jenkins.getInstance().getExtensionList(RootAction.class)) {
+            if (action instanceof UIThemesProcessor) {
+                return (UIThemesProcessor) action;
+            }
+        }
+        LOGGER.log(Level.SEVERE, "Unable to find UIThemesProcessor RootAction instance on Jenkins instance. " +
+                                "Creating an instance, assuming this is a test environment, otherwise this is a problem !!");
+        return new UIThemesProcessorImpl();
+    }
 
     protected List<UIThemeContributor> getContributors() {
         return contributors;
@@ -152,43 +179,48 @@ public class UIThemesProcessorImpl implements UIThemesProcessor {
         // theme selections, using the theme default implementation where the user has not made an
         // implementation selection for a given theme.
         addGenerationTime(themeStylesBuilder);
-        for (String themeName : themeSet.getThemeNames()) {
-            UITheme theme = themeSet.getTheme(themeName);
-            UIThemeImplementation impl = null;
 
-            if (themeConfiguration != null) {
-                String themeSelection = themeConfiguration.getUserThemeSelection(themeName);
-                if (themeSelection != null) {
-                    impl = theme.getImpl(themeSelection);
+        if (lessProcessor == null) {
+            addLESSProcessingNotAvailable(themeStylesBuilder);
+        } else {
+            for (String themeName : themeSet.getThemeNames()) {
+                UITheme theme = themeSet.getTheme(themeName);
+                UIThemeImplementation impl = null;
+
+                if (themeConfiguration != null) {
+                    String themeSelection = themeConfiguration.getUserThemeSelection(themeName);
+                    if (themeSelection != null) {
+                        impl = theme.getImpl(themeSelection);
+                    }
                 }
-            }
-            if (impl == null) {
-                impl = theme.getDefaultImpl();
-            }
-            if (impl != null) {
-                List<UIThemeContribution> contributions = impl.getContributions();
+                if (impl == null) {
+                    impl = theme.getDefaultImpl();
+                }
+                if (impl != null) {
+                    List<UIThemeContribution> contributions = impl.getContributions();
 
-                if (!contributions.isEmpty()) {
-                    for (UIThemeContribution themeContribution : contributions) {
-                        Resource lessResource = themeContribution.createUserLessResource(userHome, impl);
-                        addContributionHeader(themeStylesBuilder, themeContribution);
-                        if (lessResource != null) {
-                            try {
-                                themeStylesBuilder.append(lessProcessor.process(lessResource));
-                            } catch (Exception e) {
-                                LOGGER.log(Level.WARNING, String.format("Error processing LESS resource contribution '%s' from theme implementation '%s'.",
-                                        lessResource.getName(), themeContribution.getQName()), e);
+                    if (!contributions.isEmpty()) {
+                        for (UIThemeContribution themeContribution : contributions) {
+                            Resource lessResource = themeContribution.createUserLessResource(userHome, impl);
+                            addContributionHeader(themeStylesBuilder, themeContribution);
+                            if (lessResource != null) {
+                                try {
+                                    themeStylesBuilder.append(lessProcessor.process(lessResource));
+                                } catch (Exception e) {
+                                    LOGGER.log(Level.WARNING, String.format("Error processing LESS resource contribution '%s' from theme implementation '%s'.",
+                                            lessResource.getName(), themeContribution.getQName()), e);
+                                }
+                            } else {
+                                themeStylesBuilder.append("     /* No resource */\n\n");
+                                LOGGER.log(Level.WARNING, "Theme implementation ''{0}'' returned a null LESS resource.", themeContribution.getQName().toString());
                             }
-                        } else {
-                            themeStylesBuilder.append("     /* No resource */\n\n");
-                            LOGGER.log(Level.WARNING, "Theme implementation ''{0}'' returned a null LESS resource.", themeContribution.getQName().toString());
                         }
+                    } else {
+                        LOGGER.log(Level.WARNING, "Theme implementation ''{0}'' has zero theme contributions. At least one is expected.", impl.getQName().toString());
                     }
                 } else {
-                    LOGGER.log(Level.WARNING, "Theme implementation ''{0}'' has zero theme contributions. At least one is expected.", impl.getQName().toString());
+                    LOGGER.log(Level.WARNING, "Unknown/Unimplemented theme named ''{0}''.", themeName);
                 }
-            } else {
-                LOGGER.log(Level.WARNING, "Unknown/Unimplemented theme named ''{0}''.", themeName);
             }
         }
 
@@ -240,9 +272,38 @@ public class UIThemesProcessorImpl implements UIThemesProcessor {
         stylesBuilder.append("*/\n");
     }
 
+    private void addLESSProcessingNotAvailable(StringBuilder stylesBuilder) {
+        stylesBuilder.append("/*\n");
+        stylesBuilder.append("      Unable to generate CSS styles. Possible reasons:\n" +
+                             "      > Running under the Jenkins Core test harness, which does not have a compatible version of the Mozilla Rhino JavaScript engine.\n" +
+                             "      > The Mozilla Rhino JavaScript engine has been removed from the classpath.\n");
+        stylesBuilder.append("*/\n");
+    }
+
     private void addContributionHeader(StringBuilder stylesBuilder, UIThemeContribution themeContribution) {
         stylesBuilder.append("/*\n");
         stylesBuilder.append(String.format("      Theme Contribution '%s'\n", themeContribution.getQName()));
         stylesBuilder.append("*/\n");
+    }
+
+    @Override
+    public String getIconFileName() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    @Override
+    public String getUrlName() {
+        return "uithemes";
+    }
+
+    public final HttpResponse doCss(StaplerRequest req) throws IOException {
+        User user = User.current();
+        File cssFile = getUserThemesCSS(user);
+        return new CSSStaplerResponse(cssFile);
     }
 }

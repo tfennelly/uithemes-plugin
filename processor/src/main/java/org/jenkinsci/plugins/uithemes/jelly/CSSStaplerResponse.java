@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes.rest;
+package org.jenkinsci.plugins.uithemes.jelly;
 
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.HttpResponse;

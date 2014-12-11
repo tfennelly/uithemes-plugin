@@ -23,11 +23,16 @@
  */
 package org.jenkinsci.plugins.uithemes;
 
+import hudson.model.Action;
+import hudson.model.RootAction;
 import hudson.model.User;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

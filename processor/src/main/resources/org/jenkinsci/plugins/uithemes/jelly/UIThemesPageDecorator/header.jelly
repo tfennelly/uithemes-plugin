@@ -23,6 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='false'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <link href="${rootURL}/${it.user.url}/uithemes/css" rel="stylesheet" type="text/css" />
+<j:jelly xmlns:j="jelly:core">
+    <!-- See comments in UIThemesPageDecorator -->
+    <j:if test="${it.themesSupported}">
+        <link href="${rootURL}/uithemes/css" rel="stylesheet" type="text/css" />
+    </j:if>
 </j:jelly>
