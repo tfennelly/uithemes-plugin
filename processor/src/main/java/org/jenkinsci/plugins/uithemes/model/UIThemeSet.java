@@ -98,9 +98,9 @@ public class UIThemeSet {
         UITheme theme = getTheme(contribution.getThemeName());
         if (theme != null) {
             LOGGER.log(Level.FINE, "Theme ''{0}'' has received contribution to ''{1}'' implementation from ''{2}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName(), contribution.getContributor().getName()});
-            return theme.contribute(contribution);
+            theme.contribute(contribution);
+            return true;
         } else {
-            // TODO: capture these contribute attempts and try add them later (in case the theme gets registered by a later contributor).
             LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Cannot contribute to implementation ''{1}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
             return false;
         }

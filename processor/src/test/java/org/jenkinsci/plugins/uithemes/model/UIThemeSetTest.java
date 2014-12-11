@@ -35,23 +35,25 @@ public class UIThemeSetTest {
     @Test
     public void test() {
         UIThemeSet uiThemeSet = new UIThemeSet();
-        UIThemeContribution classicIcons = new UIThemeContribution("classic-base", "icon", "classic", UIThemeSetTest.class);
+        UIThemeContribution baseClassicIcons = new UIThemeContribution("classic-base", "icon", "classic", UIThemeSetTest.class);
 
         // Should return false if the theme is not registered.
-        Assert.assertFalse(uiThemeSet.contribute(classicIcons));
+        Assert.assertFalse(uiThemeSet.contribute(baseClassicIcons));
 
         uiThemeSet.registerTheme("icon", "Jenkins Icon Theme");
         Assert.assertEquals("[icon]", uiThemeSet.getThemeNames().toString());
 
-        // Should still return false because the theme implementation is not registered.
-        Assert.assertFalse(uiThemeSet.contribute(classicIcons));
+        // Try registering the baseClassicIcons again. Should return true once the theme is registered, even though
+        // the "icon" "classic" theme impl is still not registered. Once the theme impl gets registered the
+        // contribution should get added automatically (deferred contribution).
+        Assert.assertTrue(uiThemeSet.contribute(baseClassicIcons));
 
         // Register the "classic" implementation of the icons theme
         uiThemeSet.registerThemeImpl("icon", "classic", "Classic Jenkins Icons");
         Assert.assertEquals("[classic]", uiThemeSet.getThemeImplNames("icon").toString());
 
-        // Should now register the classic icon contribution.
-        Assert.assertTrue(uiThemeSet.contribute(classicIcons));
+        // The baseClassicIcons should be auto-registered as a deferred contribution
+        Assert.assertEquals("[{icon:classic}classic-base]", uiThemeSet.getThemeImplContributions("icon", "classic").toString());
 
         // make another contribution to the classic icons
         Assert.assertTrue(uiThemeSet.contribute(new UIThemeContribution("classic-some-other-styles", "icon", "classic", UIThemeSetTest.class)));
@@ -66,7 +68,5 @@ public class UIThemeSetTest {
 
         uiThemeSet.contribute(new UIThemeContribution("font-awesome", "icon", "font-awesome", UIThemeSetTest.class));
         Assert.assertEquals("[{icon:font-awesome}font-awesome]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
-
-        Assert.assertTrue(uiThemeSet.contribute(classicIcons));
     }
 }

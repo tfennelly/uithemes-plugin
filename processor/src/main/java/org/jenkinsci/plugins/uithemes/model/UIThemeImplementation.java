@@ -63,7 +63,11 @@ public class UIThemeImplementation {
     }
 
     public QName getQName() {
-        return new QName(themeName, name);
+        return toQName(themeName, name);
+    }
+
+    public static QName toQName(String themeName, String themeImplName) {
+        return new QName(themeName, themeImplName);
     }
 
     public String getTitle() {

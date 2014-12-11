@@ -23,7 +23,10 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +49,7 @@ public class UITheme {
     private String title;
     private String description;
     private Map<String, UIThemeImplementation> implementations = new LinkedHashMap<String, UIThemeImplementation>();
+    private List<DeferredContribution> deferredContributions = new ArrayList<DeferredContribution>();
 
     public UITheme(String name, String title, String description) {
         this.name = name;
@@ -91,25 +95,40 @@ public class UITheme {
         } else {
             LOGGER.log(Level.FINE, "Added UI Theme Implementation ''{0}''.", impl.getQName());
         }
+
+        // Check for and add any deferred contributions to this theme impl.
+        Iterator<DeferredContribution> deferredContributionsIt = deferredContributions.iterator();
+        while (deferredContributionsIt.hasNext()) {
+            DeferredContribution deferredContribution = deferredContributionsIt.next();
+            if (deferredContribution.themeImpl.equals(impl.getQName())) {
+                impl.add(deferredContribution.contribution);
+                LOGGER.log(Level.FINE, "Theme implementation contribution ''{0}'' successfully registered (deferred registration).", deferredContribution.contribution.getQName()); // see contribute method below
+                deferredContributionsIt.remove();
+            }
+        }
+
         return this;
     }
 
-    public boolean contribute(UIThemeContribution contribution) {
+    public UITheme contribute(UIThemeContribution contribution) {
         if (!contribution.getThemeName().equals(name)) {
-            LOGGER.log(Level.WARNING, "Unknown theme name ''{0}''.", name);
-            return false;
+            LOGGER.log(Level.WARNING, "Theme name mismatch. ''{0}'' != ''{1}''.", new String[] {contribution.getThemeName(), name});
+            return this;
         }
 
         UIThemeImplementation impl = getImpl(contribution.getThemeImplName());
 
         if (impl == null) {
-            LOGGER.log(Level.WARNING, "Unknown theme implementation name ''{0}''. Cannot add contribution.", contribution.getThemeImplName());
-            return false;
+            QName implQName = UIThemeImplementation.toQName(contribution.getThemeName(), contribution.getThemeImplName());
+            LOGGER.log(Level.WARNING, "Theme implementation ''{0}'' not registered yet. Registration of contribution ''{1}'' is deferred until theme implementation is registered.",
+                    new Object[] {implQName, contribution.getQName()});  // see registerImpl method above
+            deferredContributions.add(new DeferredContribution(implQName, contribution));
+        } else {
+            impl.add(contribution);
+            LOGGER.log(Level.FINE, "Theme implementation contribution ''{0}'' successfully registered.", contribution.getQName());
         }
 
-        impl.add(contribution);
-
-        return true;
+        return this;
     }
 
     public List<UIThemeContribution> getThemeImplContributions(String themeImplName) {
@@ -118,5 +137,15 @@ public class UITheme {
             return impl.getContributions();
         }
         return Collections.emptyList();
+    }
+
+    private class DeferredContribution {
+        private QName themeImpl;
+        private UIThemeContribution contribution;
+
+        private DeferredContribution(QName themeImpl, UIThemeContribution contribution) {
+            this.themeImpl = themeImpl;
+            this.contribution = contribution;
+        }
     }
 }
