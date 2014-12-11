@@ -23,7 +23,7 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
-import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * <p/>
  * See <a href="README.md">README.md</a>.
  * <p/>
- * A set of themes that "could" be applied for a user. The {@link org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl} uses this set to
+ * A set of themes that "could" be applied for a user. The {@link org.jenkinsci.plugins.uithemes.UIThemesProcessor} uses this set to
  * select the actual theme implementations to be applied, based on the users theme selection config.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

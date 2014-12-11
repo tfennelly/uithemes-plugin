@@ -24,7 +24,7 @@
 package org.jenkinsci.plugins.uithemes.rest;
 
 import org.jenkinsci.plugins.uithemes.UIThemeContributor;
-import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpecProperty;
@@ -72,14 +72,14 @@ public abstract class AbstractUIThemesTest {
     }
 
     protected void addContributors() {
-        UIThemesPlugin plugin = UIThemesPlugin.getInstance();
-        plugin.addContributor(icon_default);
-        plugin.addContributor(icon_font_awesome);
-        plugin.addContributor(status_balls_default);
-        plugin.addContributor(status_balls_doony);
-        plugin.addContributor(status_balls_css3);
-        plugin.addContributor(header_default);
-        plugin.addContributor(header_lite);
+        UIThemesProcessor processor = UIThemesProcessor.getInstance();
+        processor.addContributor(icon_default);
+        processor.addContributor(icon_font_awesome);
+        processor.addContributor(status_balls_default);
+        processor.addContributor(status_balls_doony);
+        processor.addContributor(status_balls_css3);
+        processor.addContributor(header_default);
+        processor.addContributor(header_lite);
     }
 
     public class MockUIThemeContributor implements UIThemeContributor {

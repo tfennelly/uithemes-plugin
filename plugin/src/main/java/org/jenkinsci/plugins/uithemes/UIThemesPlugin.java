@@ -26,11 +26,9 @@ package org.jenkinsci.plugins.uithemes;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -44,21 +42,18 @@ public class UIThemesPlugin extends Plugin {
 
     @Override
     public void postInitialize() throws Exception {
-        themesProcessor = UIThemesProcessorImpl.getInstance();
+        themesProcessor = UIThemesProcessor.getInstance();
         if (themesProcessor != null) {
-            addPluginContributors(getPluginManager());
+            addPluginContributors();
         }
-    }
-
-    public UIThemesProcessor getThemesProcessor() {
-        return themesProcessor;
     }
 
     public PluginManager getPluginManager() {
         return getWrapper().parent;
     }
 
-    public void addPluginContributors(PluginManager pluginManager) throws IOException {
+    private void addPluginContributors() throws IOException {
+        PluginManager pluginManager = getPluginManager();
         List<PluginWrapper> plugins = pluginManager.getPlugins();
 
         for (PluginWrapper pluginWrapper : plugins) {
@@ -77,16 +72,5 @@ public class UIThemesPlugin extends Plugin {
 
     public UIThemesProcessor removeContributor(UIThemeContributor themeContributor) {
         return themesProcessor.removeContributor(themeContributor);
-    }
-
-    public static UIThemesPlugin getInstance() {
-        PluginManager pluginManager = Jenkins.getInstance().getPluginManager();
-        PluginWrapper uiThemesPlugin = pluginManager.getPlugin("uithemes");
-        if (uiThemesPlugin != null) {
-            return (UIThemesPlugin) uiThemesPlugin.getPlugin();
-        } else {
-            LOGGER.log(Level.WARNING, "Error rebuilding plugin styles.  Failed to find a plugin named 'uithemes'.");
-            return null;
-        }
     }
 }

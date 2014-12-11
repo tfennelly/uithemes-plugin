@@ -28,8 +28,8 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import hudson.Util;
 import org.apache.commons.io.FileUtils;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.lesscss.FileResource;
 import org.lesscss.Resource;
 
@@ -61,7 +61,7 @@ import java.util.logging.Logger;
  */
 public class UIThemeContribution {
 
-    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessorImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessor.class.getName());
 
     private final String contributionName;
     private final Class<?> contributor;
@@ -117,7 +117,7 @@ public class UIThemeContribution {
             }
         }
 
-        File lessFile = UIThemesProcessorImpl.getUserThemeImplLESSFile(themeName, themeImplName, userHome);
+        File lessFile = UIThemesProcessor.getUserThemeImplLESSFile(themeName, themeImplName, userHome);
         StringWriter writer = new StringWriter();
 
         try {
@@ -158,7 +158,7 @@ public class UIThemeContribution {
     }
 
     protected Map<String, String> getUserThemeImplConfig(File userHome) throws IOException {
-        return UIThemesProcessorImpl.getUserThemeImplConfig(themeName, themeImplName, userHome);
+        return UIThemesProcessor.getUserThemeImplConfig(themeName, themeImplName, userHome);
     }
 
     private Template createLESSTemplate() {

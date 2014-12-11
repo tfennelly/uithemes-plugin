@@ -27,9 +27,7 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
-import org.jenkinsci.plugins.uithemes.UIThemesPlugin;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessorImpl;
 import org.jenkinsci.plugins.uithemes.model.UITheme;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplSpec;
 import org.jenkinsci.plugins.uithemes.model.UIThemeImplementation;
@@ -57,7 +55,6 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
 
     private User user;
     private File userHome;
-    private UIThemesPlugin pluginInstance;
 
     public String getUrlName() {
         return URL_BASE;
@@ -161,7 +158,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
                 return new JSONStaplerResponse(StatusResponse.ERROR(e.getMessage()));
             }
 
-            File themeImplConfigFile = UIThemesProcessorImpl.getUserThemeImplConfigFile(nameParams.themeName, nameParams.themeImplName, userHome);
+            File themeImplConfigFile = UIThemesProcessor.getUserThemeImplConfigFile(nameParams.themeName, nameParams.themeImplName, userHome);
             if (method.equals("GET")) {
                 if (themeImplConfigFile.exists()) {
                     Map config = JSONReadWrite.fromUTF8File(themeImplConfigFile, Map.class);
@@ -192,7 +189,7 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
     }
 
     private void deleteUserThemeCSS() {
-        UIThemesProcessorImpl.getUserThemesCSSFile(userHome).delete();
+        UIThemesProcessor.getUserThemesCSSFile(userHome).delete();
     }
 
     private UIThemeImplementation getThemeImpl(StaplerRequest req) throws IllegalArgumentException {
@@ -212,16 +209,8 @@ public class UIThemesRestAPI extends TransientUserActionFactory implements Actio
     }
 
     private UIThemeSet getUiThemeSet() {
-        UIThemesPlugin plugin = getPlugin();
-        UIThemesProcessor themeProcessor = plugin.getThemesProcessor();
+        UIThemesProcessor themeProcessor = UIThemesProcessor.getInstance();
         return themeProcessor.getUiThemeSet();
-    }
-
-    private UIThemesPlugin getPlugin() {
-        if (pluginInstance == null) {
-            pluginInstance = UIThemesPlugin.getInstance();
-        }
-        return pluginInstance;
     }
 
     @Override

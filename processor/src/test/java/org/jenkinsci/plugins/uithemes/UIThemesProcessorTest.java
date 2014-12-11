@@ -40,9 +40,9 @@ import java.io.IOException;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesProcessorImplTest {
+public class UIThemesProcessorTest {
 
-    private UIThemesProcessorImpl processor;
+    private UIThemesProcessor processor;
     private MockUIThemeContributor icon_default;
     private MockUIThemeContributor icon_font_awesome;
     private MockUIThemeContributor status_balls_default;
@@ -54,7 +54,7 @@ public class UIThemesProcessorImplTest {
     @Before
     public void before() throws NoSuchMethodException, IOException {
         JenkinsUtil.JenkinsUtilTestSetup.setup();
-        processor = new UIThemesProcessorImpl();
+        processor = new UIThemesProcessor();
         processor.deleteAllUserThemes();
         icon_default = new MockUIThemeContributor("icon", "default");
         icon_font_awesome = new MockUIThemeContributor("icon", "font-awesome");
@@ -197,7 +197,7 @@ public class UIThemesProcessorImplTest {
     }
 
     private File getUserThemesFile(User user) {
-        return UIThemesProcessorImpl.getUserThemesCSSFile(JenkinsUtil.getJenkinsUserHome(user));
+        return UIThemesProcessor.getUserThemesCSSFile(JenkinsUtil.getJenkinsUserHome(user));
     }
 
     private User createUser(String username) {
