@@ -23,8 +23,6 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
-import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;

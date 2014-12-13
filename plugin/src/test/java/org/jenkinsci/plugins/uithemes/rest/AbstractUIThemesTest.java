@@ -64,6 +64,8 @@ public abstract class AbstractUIThemesTest {
         header_default = new MockUIThemeContributor("header", "default");
         header_lite = new MockUIThemeContributor("header", "lite");
 
+        UIThemesProcessor.getInstance().reset();
+
         header_lite.setThemeImplSpec(new UIThemeImplSpec());
         UIThemeImplSpecProperty backgroundColor = new UIThemeImplSpecProperty();
         backgroundColor.type = UIThemeImplSpecProperty.Type.COLOR;

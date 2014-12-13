@@ -25,8 +25,6 @@ package org.jenkinsci.plugins.uithemes.model;
 
 import hudson.model.User;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
 

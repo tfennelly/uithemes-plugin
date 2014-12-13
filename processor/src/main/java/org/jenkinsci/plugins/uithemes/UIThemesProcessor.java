@@ -110,6 +110,11 @@ public final class UIThemesProcessor implements RootAction {
         return this;
     }
 
+    public void reset() {
+        contributors.clear();
+        themeSet = null;
+    }
+
     public File getUserThemesCSS(User user) throws IOException {
         File userHome = JenkinsUtil.getJenkinsUserHome(user);
 

@@ -29,7 +29,6 @@ import freemarker.template.TemplateException;
 import hudson.Util;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
-import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.lesscss.FileResource;
 import org.lesscss.Resource;
 
