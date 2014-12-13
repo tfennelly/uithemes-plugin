@@ -43,8 +43,8 @@ public class URLResource implements Resource {
 
     private static final Logger LOGGER = Logger.getLogger(URLResource.class.getName());
 
-    public static final String CORE_LESS_PREFIX = "/jenkins-themes/core/";
-    public static final String VARIABLES_ALIAS = CORE_LESS_PREFIX + "variables.less";
+    public static final String CORE_LESS_PREFIX = "/jenkins-themes/";
+    public static final String VARIABLES_ALIAS = CORE_LESS_PREFIX + "core/variables.less";
 
     private URI resConfigURI;
     private URL baseURL;
