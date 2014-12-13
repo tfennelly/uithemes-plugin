@@ -127,7 +127,7 @@ public final class UIThemesProcessor implements RootAction {
     }
 
 
-    public synchronized void deleteAllUserThemes() throws IOException {
+    public synchronized void deleteAllUserThemes() {
         LOGGER.log(Level.FINE, "Deleting all user theme styles.");
 
         // Delete the anonymous theme css

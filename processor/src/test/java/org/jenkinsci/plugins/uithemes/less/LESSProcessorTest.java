@@ -34,12 +34,10 @@ import java.io.IOException;
  */
 public class LESSProcessorTest {
 
-    URLResource coreVariablesResource = new URLResource("/less/fallback-core-variables.less");
-
     @Test
     public void test_load_from_classpath() throws IOException, LessException {
         LESSProcessor lessProcessor = new LESSProcessor();
-        URLResource classpathResource = new URLResource("/less/file1.less").setCoreVariables(coreVariablesResource);
+        URLResource classpathResource = new URLResource("/less/file1.less");
 
         String processed = lessProcessor.process(classpathResource);
         Assert.assertEquals(PROCESSED_CSS, processed.trim());

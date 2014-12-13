@@ -23,8 +23,6 @@
  */
 package org.jenkinsci.plugins.uithemes.less;
 
-import hudson.PluginManager;
-import hudson.PluginWrapper;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.lesscss.Resource;
 
@@ -45,12 +43,8 @@ public class URLResource implements Resource {
 
     private static final Logger LOGGER = Logger.getLogger(URLResource.class.getName());
 
-    /**
-     * Jenkins core variables LESS resource alias.  Core variables allow us to centrally
-     * define color variables (and other stuff) that can then be used by core Jenkins and
-     * plugins.
-     */
-    public static final String VARIABLES_ALIAS = "/core/variables.less";
+    public static final String CORE_LESS_PREFIX = "/jenkins-themes/core/";
+    public static final String VARIABLES_ALIAS = CORE_LESS_PREFIX + "variables.less";
 
     private URI resConfigURI;
     private URL baseURL;
@@ -147,20 +141,15 @@ public class URLResource implements Resource {
     @Override
     public URLResource createRelative(String relativeResourcePath) throws IOException {
         if (exists()) {
-            if (coreVariables != null && URLResource.isCoreVariables(relativeResourcePath)) {
-                return coreVariables;
-            }
+            //if (coreVariables != null && URLResource.isCoreVariables(relativeResourcePath)) {
+            //    return coreVariables;
+            //}
 
-            // Try for a themed resource.
-            URLResource themedResource = getThemedResource(relativeResourcePath);
-            if (themedResource != null) {
-                return themedResource;
-            }
-
-            // Might be a resource imported from a plugin e.g. "plugin:icon-shim:/less/mixins.less"
-            URLResource pluginResource = getRelativeResource(relativeResourcePath);
-            if (pluginResource != null) {
-                return pluginResource;
+            if (isCoreLESSResource(relativeResourcePath)) {
+                URLResource classpathRes = getClasspathLESSResource(relativeResourcePath);
+                if (classpathRes != null) {
+                    return classpathRes;
+                }
             }
 
             String urlAsString = resClasspathURL.toString();
@@ -184,39 +173,6 @@ public class URLResource implements Resource {
         }
     }
 
-    private URLResource getThemedResource(final String relativeResourcePath) {
-        if (themesProcessor != null) {
-            String themeVariableName = extractThemeVariableName(relativeResourcePath);
-
-            if (themeVariableName != null) {
-                String themeConfig = "TODO: fix me";
-                if (themeConfig != null) {
-                    // Try for the named theme config LESS resource e.g. "classic-icons.less"
-                    String namedThemeResource = relativeResourcePath.replace("#" + themeVariableName, themeConfig + "-" + themeVariableName);
-                    try {
-                        URLResource themedResource = createRelative(namedThemeResource);
-                        if (themedResource.exists()) {
-                            return themedResource;
-                        }
-                    } catch (IOException e) {
-                    }
-
-                    // Try for a default theme config LESS resource i.e. just the name of the theme e.g. "icons.less"
-                    String defaultThemeResource = relativeResourcePath.replace("#" + themeVariableName, themeVariableName);
-                    try {
-                        URLResource themedResource = createRelative(defaultThemeResource);
-                        if (themedResource.exists()) {
-                            return themedResource;
-                        }
-                    } catch (IOException e) {
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
     protected static String extractThemeVariableName(String relativeResourcePath) {
         File resource = new File(relativeResourcePath);
         String name = resource.getName();
@@ -232,8 +188,20 @@ public class URLResource implements Resource {
         return null;
     }
 
+    public static boolean isCoreLESSResource(String relativeResourcePath) {
+        return relativeResourcePath.startsWith(CORE_LESS_PREFIX);
+    }
+
     public static boolean isCoreVariables(String relativeResourcePath) {
         return VARIABLES_ALIAS.equals(relativeResourcePath);
+    }
+
+    private URLResource getClasspathLESSResource(String resourcePath) {
+        URL resUrl = getClass().getResource(resourcePath);
+        if (resUrl == null) {
+            return null;
+        }
+        return new URLResource(resUrl);
     }
 
     @Override
@@ -261,40 +229,6 @@ public class URLResource implements Resource {
         }
 
         return new URL(baseURL + "/" + resPath);
-    }
-
-    public static PluginWrapper getResourcePlugin(final String pluginResource, final PluginManager pluginManager) {
-        try {
-            URI pluginResourceURI = new URI(pluginResource);
-
-            if (pluginResourceURI.isAbsolute() && pluginResourceURI.getScheme().equalsIgnoreCase("plugin")) {
-                pluginResourceURI = new URI(pluginResourceURI.getSchemeSpecificPart());
-                String pluginName = pluginResourceURI.getScheme();
-
-                PluginWrapper plugin = pluginManager.getPlugin(pluginName);
-                if (plugin != null) {
-                    return plugin;
-                } else {
-                    LOGGER.log(Level.WARNING, String.format("Invalid resource URL '%s'.  Unknown plugin '%s'.", pluginResource, pluginName));
-                }
-            }
-        } catch(Exception e) {
-            LOGGER.log(Level.WARNING, "Error resolving plugin LESS resource.", e);
-        }
-
-        return null;
-    }
-
-    protected URLResource getRelativeResource(final String resourcePath) {
-        URL pluginResourceURL = getRelativeResourceURL(resourcePath);
-
-        if (pluginResourceURL != null) {
-            return new URLResource(pluginResourceURL)
-                    .setThemesProcessor(themesProcessor)
-                    .setCoreVariables(coreVariables);
-        }
-
-        return null;
     }
 
     protected URL getRelativeResourceURL(final String resourcePath) {
