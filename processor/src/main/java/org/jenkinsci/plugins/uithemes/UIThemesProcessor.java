@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.uithemes;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.RootAction;
@@ -38,17 +40,20 @@ import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 import org.jenkinsci.plugins.uithemes.model.UserUIThemeConfiguration;
 import org.jenkinsci.plugins.uithemes.util.JSONReadWrite;
 import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
+import org.jenkinsci.plugins.uithemes.util.TemplateUtil;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.lesscss.Resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -165,6 +170,19 @@ public final class UIThemesProcessor implements RootAction {
         return themeSet;
     }
 
+    public static void createJenkinsEnvVariablesLESSFile(Properties variables) throws IOException {
+        Template template = TemplateUtil.createJenkinsEnvVariablesTemplate();
+        File jenkinsEnvVariablesFile = getJenkinsEnvVariablesFile();
+        StringWriter writer = new StringWriter();
+
+        try {
+            template.process(variables, writer);
+            FileUtils.write(jenkinsEnvVariablesFile, writer.toString(), "UTF-8");
+        } catch (TemplateException e) {
+            throw new IllegalStateException(String.format("Unexpected error creating Jenkins Environment Variables LESS resource at '%s'.", jenkinsEnvVariablesFile.getAbsolutePath()), e);
+        }
+    }
+
     private synchronized File generateUIThemeSet(File userHome) throws IOException {
         userHome = normalizeUserHome(userHome);
 
@@ -246,6 +264,10 @@ public final class UIThemesProcessor implements RootAction {
 
     public static File getUserThemesDir(File userHome) {
         return new File(userHome, "themes");
+    }
+
+    public static File getJenkinsEnvVariablesFile() {
+        return new File(getUserThemesDir(JenkinsUtil.JENKINS_USER_HOME), "jenkins-env-variables.less");
     }
 
     public static File getUserThemeImplDir(String themeName, String themeImplName, File userHome) {

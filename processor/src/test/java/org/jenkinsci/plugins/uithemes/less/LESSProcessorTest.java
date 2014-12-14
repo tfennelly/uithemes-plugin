@@ -23,7 +23,9 @@
  */
 package org.jenkinsci.plugins.uithemes.less;
 
+import org.jenkinsci.plugins.uithemes.util.JenkinsUtil;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.lesscss.LessException;
 
@@ -33,6 +35,11 @@ import java.io.IOException;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class LESSProcessorTest {
+
+    @Before
+    public void setup() throws NoSuchMethodException, IOException {
+        JenkinsUtil.JenkinsUtilTestSetup.setup();
+    }
 
     @Test
     public void test_load_from_classpath() throws IOException, LessException {
@@ -46,6 +53,7 @@ public class LESSProcessorTest {
     private static final String PROCESSED_CSS =
             "#header {\n" +
             "  color: #eeeeee;\n" +
+            "  background-image: url('/jenkins/images/aaa.png');\n" +
             "}\n" +
             "#banner {\n" +
             "  color: #6c94be;\n" +

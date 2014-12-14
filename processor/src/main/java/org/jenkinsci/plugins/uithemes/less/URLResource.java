@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.uithemes.less;
 
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.lesscss.FileResource;
 import org.lesscss.Resource;
 
 import java.io.File;
@@ -44,6 +45,7 @@ public class URLResource implements Resource {
     private static final Logger LOGGER = Logger.getLogger(URLResource.class.getName());
 
     public static final String CORE_LESS_PREFIX = "/jenkins-themes/";
+    public static final String JENKINS_ENV_ALIAS = CORE_LESS_PREFIX + "env.less";
     public static final String VARIABLES_ALIAS = CORE_LESS_PREFIX + "core/variables.less";
 
     private URI resConfigURI;
@@ -139,13 +141,13 @@ public class URLResource implements Resource {
     }
 
     @Override
-    public URLResource createRelative(String relativeResourcePath) throws IOException {
+    public Resource createRelative(String relativeResourcePath) throws IOException {
         if (exists()) {
-            //if (coreVariables != null && URLResource.isCoreVariables(relativeResourcePath)) {
-            //    return coreVariables;
-            //}
+            if (relativeResourcePath.startsWith(JENKINS_ENV_ALIAS)) {
+                return new FileResource(UIThemesProcessor.getJenkinsEnvVariablesFile());
+            }
 
-            if (isCoreLESSResource(relativeResourcePath)) {
+            if (relativeResourcePath.startsWith(CORE_LESS_PREFIX)) {
                 URLResource classpathRes = getClasspathLESSResource(relativeResourcePath);
                 if (classpathRes != null) {
                     return classpathRes;
@@ -186,14 +188,6 @@ public class URLResource implements Resource {
             return name;
         }
         return null;
-    }
-
-    public static boolean isCoreLESSResource(String relativeResourcePath) {
-        return relativeResourcePath.startsWith(CORE_LESS_PREFIX);
-    }
-
-    public static boolean isCoreVariables(String relativeResourcePath) {
-        return VARIABLES_ALIAS.equals(relativeResourcePath);
     }
 
     private URLResource getClasspathLESSResource(String resourcePath) {

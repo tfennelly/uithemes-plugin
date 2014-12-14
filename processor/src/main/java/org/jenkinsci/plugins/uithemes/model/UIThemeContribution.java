@@ -23,26 +23,20 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import hudson.Util;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.util.TemplateUtil;
 import org.lesscss.FileResource;
 import org.lesscss.Resource;
 
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * UI Theme Contribution.
@@ -59,8 +53,6 @@ import java.util.logging.Logger;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class UIThemeContribution {
-
-    private static final Logger LOGGER = Logger.getLogger(UIThemesProcessor.class.getName());
 
     private final String contributionName;
     private final Class<?> contributor;
@@ -161,46 +153,8 @@ public class UIThemeContribution {
     }
 
     private Template createLESSTemplate() {
-        String templateText = loadLESSTemplateText();
-
-        if (templateText != null) {
-            Reader templateReader = new StringReader(templateText);
-
-            try {
-                try {
-                    Configuration config = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-                    config.setNumberFormat("#.####");
-                    return new Template(getQName().toString(), templateReader, config);
-                } finally {
-                    templateReader.close();
-                }
-            } catch (IOException e) {
-                throw new IllegalStateException("Exception creating FreeMarker Template instance for template:\n\n[" + templateText + "]\n\n", e);
-            }
-        } else {
-            return null;
-        }
-    }
-
-    protected String loadLESSTemplateText() {
         String templatePath = getTemplatePath();
-        InputStream templateResStream = contributor.getResourceAsStream(templatePath);
-
-        if (templateResStream != null) {
-            try {
-                Reader templateResStreamReader = new InputStreamReader(templateResStream, "UTF-8");
-                StringWriter writer = new StringWriter();
-                Util.copyStreamAndClose(templateResStreamReader, writer);
-                return writer.toString();
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, String.format("Error reading LESS resource template file '%s'.", templatePath), e);
-            }
-
-        } else {
-            LOGGER.log(Level.INFO, "No UI Theme Contribution LESS template found at ''{0}'' on the classpath.", templatePath);
-        }
-
-        return null;
+        return TemplateUtil.createLESSTemplate(getQName().toString(), templatePath, contributor);
     }
 
     private String getTemplatePath() {

@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -37,7 +38,7 @@ import java.io.File;
 public class JenkinsUtilTest {
 
     @Before
-    public void before() throws NoSuchMethodException {
+    public void before() throws NoSuchMethodException, IOException {
         JenkinsUtil.JenkinsUtilTestSetup.setup();
     }
 

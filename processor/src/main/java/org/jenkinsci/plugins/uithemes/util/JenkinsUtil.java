@@ -27,10 +27,13 @@ import hudson.model.User;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
 import org.junit.Assert;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,10 +95,15 @@ public class JenkinsUtil {
      */
     public static class JenkinsUtilTestSetup {
 
-        public static void setup() throws NoSuchMethodException {
+        public static void setup() throws NoSuchMethodException, IOException {
             JENKINS_USER_HOME = new File("./target/jenkins-home/users");
             FileUtils.deleteQuietly(JENKINS_USER_HOME);
             JENKINS_USER_HOME.mkdirs();
+
+            Properties variables = new Properties();
+            variables.setProperty("rootURL", "/jenkins");
+            UIThemesProcessor.createJenkinsEnvVariablesLESSFile(variables);
+
             Assert.assertNotNull("Test env running against a version of Jenkins older than version 1.566?", idStrategy);
             idStrategy = JenkinsUtilTestSetup.class.getMethod("mockIdStrategyMethod");
         }
