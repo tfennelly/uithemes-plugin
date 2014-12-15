@@ -21,7 +21,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
             <artifactId>icon-set</artifactId>
-            <version>1.0.6-SNAPSHOT</version>
+            <version>1.0.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
