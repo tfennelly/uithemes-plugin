@@ -28,8 +28,8 @@ import freemarker.template.TemplateException;
 import hudson.Util;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.uithemes.UIThemesProcessor;
+import org.jenkinsci.plugins.uithemes.less.URLResource;
 import org.jenkinsci.plugins.uithemes.util.TemplateUtil;
-import org.lesscss.FileResource;
 import org.lesscss.Resource;
 
 import javax.xml.namespace.QName;
@@ -114,7 +114,7 @@ public class UIThemeContribution {
         try {
             lessTemplate.process(userConfig, writer);
             FileUtils.write(lessFile, writer.toString(), "UTF-8");
-            return new FileResource(lessFile);
+            return new URLResource(lessFile.toURI().toURL());
         } catch (TemplateException e) {
             throw new IOException(
                     String.format("Error applying user theme impl configuration to LESS resource template. UserHome '%s', ThemeImpl '%s'.\n" +
