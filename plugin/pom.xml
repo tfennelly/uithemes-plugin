@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jenkins-ci.plugins.uithemes</groupId>
@@ -16,6 +17,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>uithemes-processor</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.icon-shim</groupId>
+            <artifactId>icon-set</artifactId>
+            <version>1.0.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -81,7 +87,9 @@
                         <goals>
                             <goal>gulp</goal>
                         </goals>
-                        <configuration><arguments>build</arguments></configuration>
+                        <configuration>
+                            <arguments>build</arguments>
+                        </configuration>
                     </execution>
 
                     <execution>
@@ -90,7 +98,9 @@
                         <goals>
                             <goal>gulp</goal>
                         </goals>
-                        <configuration><arguments>test</arguments></configuration>
+                        <configuration>
+                            <arguments>test</arguments>
+                        </configuration>
                     </execution>
 
                 </executions>

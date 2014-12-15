@@ -26,22 +26,26 @@ package org.jenkinsci.plugins.uithemes;
 import hudson.Plugin;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import org.jenkins.ui.icon.Icon;
+import org.jenkins.ui.icon.IconSet;
+import org.jenkinsci.plugins.uithemes.model.UIThemeContribution;
+import org.jenkinsci.plugins.uithemes.model.UIThemeSet;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class UIThemesPlugin extends Plugin {
-
-    private static final Logger LOGGER = Logger.getLogger(UIThemesPlugin.class.getName());
+public class UIThemesPlugin extends Plugin implements UIThemeContributor {
 
     protected UIThemesProcessor themesProcessor;
 
     @Override
     public void postInitialize() throws Exception {
+        // Register the icon definition to the IconSet
+        IconSet.icons.addIcon(new Icon("icon-uithemes icon-md", Icon.ICON_MEDIUM_STYLE));
+
         themesProcessor = UIThemesProcessor.getInstance();
         if (themesProcessor != null) {
             addPluginContributors();
@@ -72,5 +76,11 @@ public class UIThemesPlugin extends Plugin {
 
     public UIThemesProcessor removeContributor(UIThemeContributor themeContributor) {
         return themesProcessor.removeContributor(themeContributor);
+    }
+
+    @Override
+    public void contribute(UIThemeSet themeSet) {
+        // See src/main/resources/jenkins-themes/icons/default/default-icons-uithemes/theme-template.less
+        themeSet.contribute(new UIThemeContribution("default-icons-uithemes", "icons", "default", UIThemesPlugin.class));
     }
 }

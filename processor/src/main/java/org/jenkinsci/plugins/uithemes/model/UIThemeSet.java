@@ -23,7 +23,10 @@
  */
 package org.jenkinsci.plugins.uithemes.model;
 
+import javax.xml.namespace.QName;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +49,7 @@ public class UIThemeSet {
     private static final Logger LOGGER = Logger.getLogger(UIThemeSet.class.getName());
 
     private Map<String, UITheme> themes = new LinkedHashMap<String, UITheme>();
+    private List<DeferredContribution> deferredContributions = new ArrayList<DeferredContribution>();
 
     public UITheme registerTheme(String name, String title) {
         return registerTheme(name, title, title);
@@ -58,6 +62,19 @@ public class UIThemeSet {
         }
         theme = new UITheme(name, title, description);
         themes.put(name, theme);
+
+        // Check for and add any deferred contributions to this theme impl.
+        Iterator<DeferredContribution> deferredContributionsIt = deferredContributions.iterator();
+        QName themeQName = new QName(name);
+        while (deferredContributionsIt.hasNext()) {
+            DeferredContribution deferredContribution = deferredContributionsIt.next();
+            if (deferredContribution.getTargetName().equals(themeQName)) {
+                theme.contribute(deferredContribution.getContribution());
+                LOGGER.log(Level.FINE, "Theme contribution ''{0}'' successfully registered (deferred registration).", deferredContribution.getContribution().getQName()); // see contribute method below
+                deferredContributionsIt.remove();
+            }
+        }
+
         return theme;
     }
 
@@ -99,7 +116,8 @@ public class UIThemeSet {
             theme.contribute(contribution);
             return true;
         } else {
-            LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Cannot contribute to implementation ''{1}''.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
+            LOGGER.log(Level.WARNING, "Theme ''{0}'' is not registered. Contribute to implementation ''{1}'' is deferred and will be added if the theme is registered.", new String [] {contribution.getThemeName(), contribution.getThemeImplName()});
+            deferredContributions.add(new DeferredContribution(new QName(contribution.getThemeName()), contribution));
             return false;
         }
     }

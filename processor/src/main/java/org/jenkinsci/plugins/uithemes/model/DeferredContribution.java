@@ -21,46 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.uithemes.ui;
+package org.jenkinsci.plugins.uithemes.model;
 
-import hudson.Extension;
-import hudson.model.Action;
-import hudson.model.TransientUserActionFactory;
-import hudson.model.User;
-
-import java.util.Collection;
-import java.util.Collections;
+import javax.xml.namespace.QName;
 
 /**
- * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- */
-@Extension
-public class UIThemesAction extends TransientUserActionFactory implements Action {
+* @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+*/
+public class DeferredContribution {
+    private QName targetName;
+    private UIThemeContribution contribution;
 
-    private User user;
-
-    @Override
-    public Collection<? extends Action> createFor(User target) {
-        user = target;
-        return Collections.singletonList(this);
+    DeferredContribution(QName targetName, UIThemeContribution contribution) {
+        this.targetName = targetName;
+        this.contribution = contribution;
     }
 
-    public User getUser() {
-        return user;
+    public QName getTargetName() {
+        return targetName;
     }
 
-    @Override
-    public String getIconFileName() {
-        return "icon-uithemes";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "UI Themes";
-    }
-
-    @Override
-    public String getUrlName() {
-        return "uithemes";
+    public UIThemeContribution getContribution() {
+        return contribution;
     }
 }

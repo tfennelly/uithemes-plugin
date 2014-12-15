@@ -43,10 +43,9 @@ public class UIThemeSetTest {
         uiThemeSet.registerTheme("icon", "Jenkins Icon Theme");
         Assert.assertEquals("[icon]", uiThemeSet.getThemeNames().toString());
 
-        // Try registering the baseClassicIcons again. Should return true once the theme is registered, even though
+        // Should not be any need to register baseClassicIcons again. Should get registered once the theme is registered, even though
         // the "icon" "classic" theme impl is still not registered. Once the theme impl gets registered the
         // contribution should get added automatically (deferred contribution).
-        Assert.assertTrue(uiThemeSet.contribute(baseClassicIcons));
 
         // Register the "classic" implementation of the icons theme
         uiThemeSet.registerThemeImpl("icon", "classic", "Classic Jenkins Icons");
@@ -60,13 +59,12 @@ public class UIThemeSetTest {
 
         Assert.assertEquals("[{icon:classic}classic-base, {icon:classic}classic-some-other-styles]", uiThemeSet.getThemeImplContributions("icon", "classic").toString());
 
-        // Add another implementation for the icons theme...
+        // Now try adding another icon theme impl, but this time make the contribution before the theme impl is registered. Should
+        // result in a deferred registration of the contribution, but this time from the UITheme (Vs the UIThemeSet, as above).
+        uiThemeSet.contribute(new UIThemeContribution("font-awesome", "icon", "font-awesome", UIThemeSetTest.class));
 
         uiThemeSet.registerThemeImpl("icon", "font-awesome", "FontAwesome Jenkins Icons");
         Assert.assertEquals("[classic, font-awesome]", uiThemeSet.getThemeImplNames("icon").toString());
-        Assert.assertEquals("[]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
-
-        uiThemeSet.contribute(new UIThemeContribution("font-awesome", "icon", "font-awesome", UIThemeSetTest.class));
         Assert.assertEquals("[{icon:font-awesome}font-awesome]", uiThemeSet.getThemeImplContributions("icon", "font-awesome").toString());
     }
 }

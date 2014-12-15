@@ -100,9 +100,9 @@ public class UITheme {
         Iterator<DeferredContribution> deferredContributionsIt = deferredContributions.iterator();
         while (deferredContributionsIt.hasNext()) {
             DeferredContribution deferredContribution = deferredContributionsIt.next();
-            if (deferredContribution.themeImpl.equals(impl.getQName())) {
-                impl.add(deferredContribution.contribution);
-                LOGGER.log(Level.FINE, "Theme implementation contribution ''{0}'' successfully registered (deferred registration).", deferredContribution.contribution.getQName()); // see contribute method below
+            if (deferredContribution.getTargetName().equals(impl.getQName())) {
+                impl.add(deferredContribution.getContribution());
+                LOGGER.log(Level.FINE, "Theme implementation contribution ''{0}'' successfully registered (deferred registration).", deferredContribution.getContribution().getQName()); // see contribute method below
                 deferredContributionsIt.remove();
             }
         }
@@ -137,15 +137,5 @@ public class UITheme {
             return impl.getContributions();
         }
         return Collections.emptyList();
-    }
-
-    private class DeferredContribution {
-        private QName themeImpl;
-        private UIThemeContribution contribution;
-
-        private DeferredContribution(QName themeImpl, UIThemeContribution contribution) {
-            this.themeImpl = themeImpl;
-            this.contribution = contribution;
-        }
     }
 }
