@@ -36,6 +36,7 @@ exports.execAsyncPUT = function (resPathTokens, data, success, params) {
         url: ajaxUrl,
         type: 'put',
         dataType: 'json',
+        contentType: 'application/json',
         data: data,
         success: success
     });
