@@ -26,6 +26,9 @@ package org.jenkinsci.plugins.uithemes;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import hudson.Extension;
+import hudson.Plugin;
+import hudson.PluginManager;
+import hudson.PluginWrapper;
 import hudson.model.Action;
 import hudson.model.RootAction;
 import hudson.model.User;
@@ -113,6 +116,17 @@ public final class UIThemesProcessor implements RootAction {
         contributors.remove(contributor);
         themeSet = null; // recreate
         return this;
+    }
+
+    public void addPluginContributors(PluginManager pluginManager) throws IOException {
+        List<PluginWrapper> plugins = pluginManager.getPlugins();
+
+        for (PluginWrapper pluginWrapper : plugins) {
+            Plugin plugin = pluginWrapper.getPlugin();
+            if (plugin instanceof UIThemeContributor) {
+                addContributor((UIThemeContributor) plugin);
+            }
+        }
     }
 
     public void reset() {

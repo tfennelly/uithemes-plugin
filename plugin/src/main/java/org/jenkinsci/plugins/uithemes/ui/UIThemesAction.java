@@ -51,6 +51,7 @@ public class UIThemesAction extends TransientUserActionFactory implements Action
 
     @Override
     public String getIconFileName() {
+        // returning the base icon class name Vs an actual image file name..
         return "icon-uithemes";
     }
 
